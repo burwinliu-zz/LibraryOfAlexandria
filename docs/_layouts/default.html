@@ -48,18 +48,9 @@
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <span class="navbar-brand" style="pointer-events:none;">{{ site.title }}</span>
-        </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="{% if current[1] == 'index.html' or current[1] == %} active {% endif %}"><a href="index.html">Home</a></li>
+            <li class="{% if current[1] == 'index.html' or current[1] == %} active {% endif %}"><a href="index.html">{{ site.title }}</a></li>
           </ul>
           <ul class="nav navbar-nav justify-content-end">
             <li class="{{ proposalClass }}{% if current[1] == 'proposal.html' %} active {% endif %}"><a href="proposal.html">Proposal</a></li>
