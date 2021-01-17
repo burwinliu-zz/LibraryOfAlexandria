@@ -38,6 +38,6 @@ code {
   font-size: 80%;
 }
 
-.li .nav-item{
+li.nav-item{
   display: inherit;
 }

@@ -16,3 +16,9 @@ Our goal is to make an intelligent agent sort, move and retrieve various items i
 As we are right now in the initial stages of development, we imagine we will be using NLP for retrieval and some form of a graph search to find locations for certain items
 
 ## Evaluation
+Our metrics will include ...
+
+Our qualitative anlysis will depend on ...
+
+
+
