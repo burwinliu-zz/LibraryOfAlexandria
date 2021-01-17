@@ -42,25 +42,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
-    <nav class="navbar navbar-expand-lg fixed-top">
-      <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav">
-            <li class="{% if current[1] == 'index.html' or current[1] == %} active {% endif %}">
-              <a href="index.html"><img src="{{'static/icon.svg' | relative_url'}}" alt="{{site.title}}"></a>
-            </li>
-          </ul>
-          <ul class="nav navbar-nav justify-content-end">
-            <li class="{{ proposalClass }}{% if current[1] == 'proposal.html' %} active {% endif %}"><a href="proposal.html">Proposal</a></li>
-            <li class="{{ statusClass }}{% if current[1] == 'status.html' %} active {% endif %}"><a href="status.html">Status</a></li>
-            <li class="{{ finalClass }}{% if current[1] == 'final.html' %} active {% endif %}"><a href="final.html">Final</a></li>
-            <li class="{% if current[1] == 'team.html' %} active {% endif %}"><a href="team.html">Team Details</a></li>
-          </ul>
-        </div>
-        
-      </div>
-      
-    </nav>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
