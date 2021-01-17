@@ -6,11 +6,11 @@ title:  Team
 # {{ page.title }}
 
 
-## USER 1
-***UCI Net ID***: ucinetid1
+## Burwin Liu
+***UCI Net ID***: burwinl
 
-## USER 2
+## Kelson Lin
 ***UCI Net ID***: ucinetid2
 
-## USER 3
+## Archit Garg
 ***UCI Net ID***: ucinetid3
