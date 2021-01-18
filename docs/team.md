@@ -13,4 +13,4 @@ title:  Team
 ***UCI Net ID***: kelsonl
 
 ## Archit Garg
-***UCI Net ID***: ucinetid3
+***UCI Net ID***: architg3
