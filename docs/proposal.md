@@ -22,3 +22,5 @@ Our qualitative anlysis will depend on ...
 
 
 
+
+Appointment Date/Time: Friday Jan 22, 2:15pm
