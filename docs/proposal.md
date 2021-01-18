@@ -18,7 +18,7 @@ As we are right now in the initial stages of development, we imagine we will be 
 ## Evaluation
 Our metrics will include ...
 
-Our qualitative analysis will depend on first completing basic tasks such as recieving items from chests in linear and strightforward scenarios ie. one chest few items. As our scope evolves we will also add the element of complexity in storage and recall tasks by the agent. To visualize our algorithim we will use plot devices and various search algorithims and we will also expirement with the level of complexity our agent can handle. Our moonshot case that could be interesting is recalling items and using them to speed up the search ie. first chest has an ender pearl so the agent throws it to get to its next search location faster. 
+Our qualitative analysis will depend on first completing basic tasks such as recieving items from chests in linear and strightforward scenarios ie. one chest few items. As our scope evolves we will also add the element of complexity in storage and recall tasks by the agent. To visualize our algorithim we will use plot devices and various search algorithims to ensure we are using the most efficient algorithim. We will also expirement with the level of complexity our agent can handle and make changes based off performace in each case. Our moonshot case that could be interesting is recalling items and using them to speed up the search ie. first chest has an ender pearl so the agent throws it to get to its next search location faster. 
 
 <br><br><br><br><br>
 Appointment Date/Time: Friday Jan 22, 2:15pm
