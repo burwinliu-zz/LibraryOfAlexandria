@@ -23,4 +23,7 @@ Our qualitative analysis will depend on first completing basic tasks as a sanity
 ## Appointment
 Appointment Date/Time: Friday Jan 22, 2:15pm
 
+## Group Meeting Time
+Fridays, 2:00 pm
+
 <br><br><br><br><br>
