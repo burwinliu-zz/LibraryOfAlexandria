@@ -1,3 +1,16 @@
 _site/
 .sass-cache/
 .jekyll-metadata
+
+
+venv/
+.idea
+
+MalmoPlatform/*
+!MalmoPlatform/Malmo
+MalmoPlatform/Malmo/*
+!MalmoPlatform/Malmo/samples
+MalmoPlatform/Malmo/samples/*
+!MalmoPlatform/Malmo/samples/Python_examples/
+MalmoPlatform/Malmo/samples/Python_examples/*
+!MalmoPlatform/Malmo/samples/Python_examples/library/*
