@@ -92,12 +92,14 @@ def GetMissionXML():
                             <Name>Librarian</Name>
                             <AgentStart>
                                 <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
-                                
+                                <Inventory/>
                             </AgentStart>
                             <AgentHandlers>
                                 <ContinuousMovementCommands/>
                                 <DiscreteMovementCommands/>
                                 <ChatCommands/>
+                                <InventoryCommands/>
+                                <ObservationFromFullInventory/>
                                 <ObservationFromFullStats/>
                                 <ObservationFromRay/>
                                 <ObservationFromGrid>
@@ -169,23 +171,47 @@ def moveToChest(arg_agent_host, chest_num):
             agent_position += 1
     print("done")
 
-def openChest(agent_host):
-    agent_host.sendCommand("use 1")
-    time.sleep(0.1)
-    agent_host.sendCommand("use 0")
 
-def closeChest(agent_host):
-    for i in range(10):
-        agent_host.sendCommand("movenorth")
+def openChest(arg_agent):
+    arg_agent.sendCommand("use 1")
     time.sleep(0.1)
-    for i in range(10):
-        agent_host.sendCommand("movesouth")
+    arg_agent.sendCommand("use 0")
+
+
+def closeChest(arg_agent):
+    for _ in range(10):
+        arg_agent.sendCommand("movenorth")
+    time.sleep(0.1)
+    for _ in range(10):
+        arg_agent.sendCommand("movesouth")
+
+
+def _swap_item_to_inventory(arg_agent, pos_chest, pos_inventory):
+    #     swapInventoryItems 3 Chest:0
+    arg_agent.sendCommand(f"swapInventoryItems {pos_inventory} container.chest:{pos_chest} ")
+    print(f"swapInventoryItems {pos_inventory} container.chest:{pos_chest} ")
+
+
+def _print_contents(obs):
+    for i in range(0, 39):
+        key = 'container.chestSlot_' + str(i) + '_item'
+        if key in obs:
+            print(f" At pos {key} value {obs[key]}")
+
 
 def testRun(agent_host):
     time.sleep(1)
     moveToChest(agent_host, 3)
     time.sleep(1)
     openChest(agent_host)
+    time.sleep(1)
+    state = agent_host.getWorldState()
+    if state.number_of_observations_since_last_state > 0:
+        obs = json.loads(state.observations[-1].text)
+        if u'inventoriesAvailable' in obs:
+            _print_contents(obs)
+    time.sleep(1)
+    _swap_item_to_inventory(agent_host, 0, 0)
     time.sleep(1)
     closeChest(agent_host)
     time.sleep(1)
@@ -198,6 +224,7 @@ def testRun(agent_host):
     moveToChest(agent_host, 1)
     time.sleep(1)
     openChest(agent_host)
+
     time.sleep(1)
     closeChest(agent_host)
     time.sleep(1)
@@ -213,6 +240,7 @@ def testRun(agent_host):
     time.sleep(1)
     closeChest(agent_host)
     time.sleep(1)
+
 
 if __name__ == '__main__':
     # Create default Malmo objects:
