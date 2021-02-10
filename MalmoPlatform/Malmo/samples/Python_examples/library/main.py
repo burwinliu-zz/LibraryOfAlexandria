@@ -31,6 +31,8 @@ import time
 import json
 from priority_dict import priorityDictionary as PQ
 
+agent_position = 7
+
 
 def GetMissionXML():
     obs_size = 5
@@ -101,10 +103,64 @@ def GetMissionXML():
                                         <max x="{int(obs_size / 2)}" y="0" z="{int(obs_size / 2)}"/>
                                     </Grid>
                                 </ObservationFromGrid>
+                                <AgentQuitFromReachingPosition>
+                                    <Marker x="15" y="2" z="0.5" tolerance="0.5" description="Goal_found"/>
+                                </AgentQuitFromReachingPosition>
                             </AgentHandlers>
                         </AgentSection>
                     </Mission>'''
 
+def end(agent_host, world_state):
+    print("Ending Mission", end = ' ')
+    while world_state.is_mission_running:
+        print(".", end="")
+        agent_host.sendCommand("moveeast")
+        time.sleep(0.1)
+        world_state = agent_host.getWorldState()
+        for error in world_state.errors:
+            print("Error:",error.text)
+
+def moveLeft(agent_host, steps):
+    for i in range(steps):
+        agent_host.sendCommand("moveeast")
+        time.sleep(0.1)
+
+def moveRight(agent_host, steps):
+    for i in range(steps):
+        agent_host.sendCommand("movewest")
+        time.sleep(0.1)
+
+def moveToChest(agent_host, chestNum):
+    global agent_position
+    if agent_position == chestNum:
+        return
+    print(f"Moving to chest #{chestNum} ..", end=' ')
+    if chestNum == 7: # if moving to ender chest
+        while agent_position < 6: # move to chest 6
+            moveRight(agent_host, 2)
+            agent_position += 1
+        moveRight(agent_host, 3) # move to ender chest
+        agent_position = 7
+        print("done")
+        return
+    if agent_position == 7: # if starting at ender chest
+        moveLeft(agent_host, 3) # move to chest 6
+        agent_position = 6
+        while chestNum < agent_position: # move to chest
+            moveLeft(agent_host, 2)
+            agent_position -= 1
+        print("done")
+        return
+    # moving chest -> chest
+    if agent_position > chestNum: # if chest is on the left
+        while agent_position > chestNum:
+            moveLeft(agent_host, 2)
+            agent_position -= 1
+    elif agent_position < chestNum: # if chest is on the right
+        while agent_position < chestNum:
+            moveRight(agent_host, 2)
+            agent_position += 1
+    print("done")
 
 if __name__ == '__main__':
     # Create default Malmo objects:
@@ -119,8 +175,20 @@ if __name__ == '__main__':
     my_clients = MalmoPython.ClientPool()
     my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
     agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
-    time.sleep(4)
+    # Loop until mission starts:
+    print("Waiting for the mission to start ", end=' ')
+    world_state = agent_host.getWorldState()
+    while not world_state.has_mission_begun:
+        print(".", end="")
+        time.sleep(0.1)
+        world_state = agent_host.getWorldState()
+        for error in world_state.errors:
+            print("Error:",error.text)
 
+    print()
+    print("Mission running..")
+
+    print("Setting up chests..", end=' ')
     size = 6
     items = {'stone': 50, 'diamond': 30}
 
@@ -137,3 +205,20 @@ if __name__ == '__main__':
         itemString = ",".join([f"{{Slot:{num}, id:{value[0]},Count:{value[1]}b}}"
                                for num, value in enumerate(chests[i].items())])
         agent_host.sendCommand(f"chat /setblock {i * 2 + 3} 2 1 minecraft:chest 2 replace {{Items:[{itemString}]}}")
+    print("done")
+
+    time.sleep(2)
+    moveToChest(agent_host, 3)
+    time.sleep(2)
+    moveToChest(agent_host, 6)
+    time.sleep(2)
+    moveToChest(agent_host, 1)
+    time.sleep(2)
+    moveToChest(agent_host, 4)
+    time.sleep(2)
+    moveToChest(agent_host, 7)
+    time.sleep(2)
+    end(agent_host, world_state)
+
+    print()
+    print("Mission ended")
