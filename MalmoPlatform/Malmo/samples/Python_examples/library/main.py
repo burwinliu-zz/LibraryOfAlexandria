@@ -93,6 +93,7 @@ def GetMissionXML():
                                 
                             </AgentStart>
                             <AgentHandlers>
+                                <ContinuousMovementCommands/>
                                 <DiscreteMovementCommands/>
                                 <ChatCommands/>
                                 <ObservationFromFullStats/>
@@ -162,6 +163,51 @@ def moveToChest(agent_host, chestNum):
             agent_position += 1
     print("done")
 
+def openChest(agent_host):
+    agent_host.sendCommand("use 1")
+    time.sleep(0.1)
+    agent_host.sendCommand("use 0")
+
+def closeChest(agent_host):
+    for i in range(10):
+        agent_host.sendCommand("movenorth")
+    time.sleep(0.1)
+    for i in range(10):
+        agent_host.sendCommand("movesouth")
+
+def testRun(agent_host):
+    time.sleep(1)
+    moveToChest(agent_host, 3)
+    time.sleep(1)
+    openChest(agent_host)
+    time.sleep(1)
+    closeChest(agent_host)
+    time.sleep(1)
+    moveToChest(agent_host, 6)
+    time.sleep(1)
+    openChest(agent_host)
+    time.sleep(1)
+    closeChest(agent_host)
+    time.sleep(1)
+    moveToChest(agent_host, 1)
+    time.sleep(1)
+    openChest(agent_host)
+    time.sleep(1)
+    closeChest(agent_host)
+    time.sleep(1)
+    moveToChest(agent_host, 4)
+    time.sleep(1)
+    openChest(agent_host)
+    time.sleep(1)
+    closeChest(agent_host)
+    time.sleep(1)
+    moveToChest(agent_host, 7)
+    time.sleep(1)
+    openChest(agent_host)
+    time.sleep(1)
+    closeChest(agent_host)
+    time.sleep(1)
+
 if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
@@ -207,17 +253,7 @@ if __name__ == '__main__':
         agent_host.sendCommand(f"chat /setblock {i * 2 + 3} 2 1 minecraft:chest 2 replace {{Items:[{itemString}]}}")
     print("done")
 
-    time.sleep(2)
-    moveToChest(agent_host, 3)
-    time.sleep(2)
-    moveToChest(agent_host, 6)
-    time.sleep(2)
-    moveToChest(agent_host, 1)
-    time.sleep(2)
-    moveToChest(agent_host, 4)
-    time.sleep(2)
-    moveToChest(agent_host, 7)
-    time.sleep(2)
+    testRun(agent_host)
     end(agent_host, world_state)
 
     print()
