@@ -92,7 +92,9 @@ def GetMissionXML():
                             <Name>Librarian</Name>
                             <AgentStart>
                                 <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
-                                <Inventory/>
+                                <Inventory>
+                                    <InventoryItem slot="0" type="diamond_pickaxe"/>
+                                </Inventory>
                             </AgentStart>
                             <AgentHandlers>
                                 <ContinuousMovementCommands/>
@@ -188,8 +190,8 @@ def closeChest(arg_agent):
 
 def _swap_item_to_inventory(arg_agent, pos_chest, pos_inventory):
     #     swapInventoryItems 3 Chest:0
-    arg_agent.sendCommand(f"swapInventoryItems {pos_inventory} container.chest:{pos_chest} ")
-    print(f"swapInventoryItems {pos_inventory} container.chest:{pos_chest} ")
+    arg_agent.sendCommand(f"swapInventoryItems {pos_inventory} Chest:{pos_chest} ")
+    print(f"swapInventoryItems {pos_inventory} Chest:{pos_chest} ")
 
 
 def _print_contents(obs):
