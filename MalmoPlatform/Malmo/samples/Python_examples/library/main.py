@@ -32,23 +32,10 @@ import json
 from priority_dict import priorityDictionary as PQ
 
 
-def GetMissionXML(size, items: dict):
+def GetMissionXML():
     obs_size = 5
 
-    chests_str = ""
-    chests = [{} for _ in range(size)]
-    for i, j in items.items():
-        for _ in range(j):
-            nChest = int(random()*size)
-            if i not in chests[nChest]:
-                chests[nChest][i] = 0
-            chests[nChest][i] += 1
-
-    for i, j in enumerate(chests):
-        # <Inventory>
-        #                                     <InventoryItem slot="0" type="diamond_pickaxe"/>
-        #                                 </Inventory>
-        chests_str += f"<DrawBlock x='{i//2 * 2}' y='2' z='{1 if i%2 == 0 else -1}' type='chest'/>\n"
+    chests_str = "<DrawBlock x='0' y='2' z='1' type='chest'/>\n"
 
     return f'''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -68,22 +55,22 @@ def GetMissionXML(size, items: dict):
                             <ServerHandlers>
                                 <FlatWorldGenerator generatorString="3;7,2;1;"/>
                                 <DrawingDecorator>
-                                    <DrawCuboid x1='{-size}' x2='{size}' y1='2' y2='2' z1='{-size}' z2='{size}' type='air'/>
-                                    <DrawCuboid x1='{-size}' x2='{size}' y1='1' y2='1' z1='{-size}' z2='{size}' type='stone'/>
-                                    {chests_str}
+                                    <DrawBlock x='0' y='2' z='1' type='ender_chest' />
                                 </DrawingDecorator>
                                 <ServerQuitWhenAnyAgentFinishes/>
+                                    
                             </ServerHandlers>
                         </ServerSection>
 
                         <AgentSection mode="Survival">
-                            <Name></Name>
+                            <Name>Librarian</Name>
                             <AgentStart>
                                 <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
                                 
                             </AgentStart>
                             <AgentHandlers>
                                 <DiscreteMovementCommands/>
+                                <ChatCommands/>
                                 <ObservationFromFullStats/>
                                 <ObservationFromRay/>
                                 <ObservationFromGrid>
@@ -101,7 +88,7 @@ if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
 
-    my_mission = MalmoPython.MissionSpec(GetMissionXML(6, {'stone': 50, 'diamond': 30}), True)
+    my_mission = MalmoPython.MissionSpec(GetMissionXML(), True)
     my_mission_record = MalmoPython.MissionRecordSpec()
     my_mission.requestVideo(800, 500)
     my_mission.setViewpoint(1)
@@ -110,3 +97,21 @@ if __name__ == '__main__':
     my_clients = MalmoPython.ClientPool()
     my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
     agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
+    time.sleep(4)
+
+    size = 6
+    items = {'stone': 50, 'diamond': 30}
+
+    chests = [{} for _ in range(size)]
+    for i, j in items.items():
+        for _ in range(j):
+            nChest = int(random() * size)
+            if i not in chests[nChest]:
+                chests[nChest][i] = 0
+            chests[nChest][i] += 1
+    for i in range(size):
+        # /setblock ~3 ~2 ~1 minecraft:chest 2 replace {Items:[{Slot:0,id:stone,Count:1b}]}
+
+        itemString = ",".join([f"{{Slot:{num}, id:{value[0]},Count:{value[1]}b}}"
+                               for num, value in enumerate(chests[i].items())])
+        agent_host.sendCommand(f"chat /setblock {i * 2 + 3} 2 1 minecraft:chest 2 replace {{Items:[{itemString}]}}")
