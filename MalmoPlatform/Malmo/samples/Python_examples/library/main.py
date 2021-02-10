@@ -36,6 +36,28 @@ def GetMissionXML():
     obs_size = 5
 
     chests_str = "<DrawBlock x='0' y='2' z='1' type='chest'/>\n"
+    front = "<DrawCuboid x1='15' y1='0' z1='2' x2='-2' y2='10' z2='2' type='bookshelf' />"
+    right = "<DrawCuboid x1='-2' y1='0' z1='2' x2='-2' y2='10' z2='-10' type='bookshelf' />"
+    left = "<DrawCuboid x1='15' y1='0' z1='2' x2='15' y2='10' z2='-10' type='bookshelf' />"
+    back = "<DrawCuboid x1='15' y1='0' z1='-10' x2='-2' y2='10' z2='-10' type='bookshelf' />"
+    roof = "<DrawCuboid x1='15' y1='10' z1='-10' x2='-2' y2='10' z2='2' type='bookshelf' />"
+    floor = "<DrawCuboid x1='15' y1='1' z1='-10' x2='-2' y2='1' z2='2' type='bookshelf' />"
+    torches = ""
+    for i in range(-1,15,2):
+        torches += f"<DrawBlock x='{i}' y='5' z='1' type='torch' face='NORTH' />"
+        torches += f"<DrawBlock x='{i}' y='7' z='1' type='torch' face='NORTH' />"
+        torches += f"<DrawBlock x='{i}' y='9' z='1' type='torch' face='NORTH' />"
+        torches += f"<DrawBlock x='{i}' y='5' z='-9' type='torch' face='SOUTH' />"
+        torches += f"<DrawBlock x='{i}' y='7' z='-9' type='torch' face='SOUTH' />"
+        torches += f"<DrawBlock x='{i}' y='9' z='-9' type='torch' face='SOUTH' />"
+    for i in range(-9,2,2):
+        torches += f"<DrawBlock x='14' y='5' z='{i}' type='torch' face='WEST' />"
+        torches += f"<DrawBlock x='14' y='7' z='{i}' type='torch' face='WEST' />"
+        torches += f"<DrawBlock x='14' y='9' z='{i}' type='torch' face='WEST' />"
+        torches += f"<DrawBlock x='-1' y='5' z='{i}' type='torch' face='EAST' />"
+        torches += f"<DrawBlock x='-1' y='7' z='{i}' type='torch' face='EAST' />"
+        torches += f"<DrawBlock x='-1' y='9' z='{i}' type='torch' face='EAST' />"
+    libraryEnv = front + right + left + back + roof + floor + torches
 
     return f'''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -55,7 +77,7 @@ def GetMissionXML():
                             <ServerHandlers>
                                 <FlatWorldGenerator generatorString="3;7,2;1;"/>
                                 <DrawingDecorator>
-                                    <DrawBlock x='0' y='2' z='1' type='ender_chest' />
+                                    <DrawBlock x='0' y='2' z='1' type='ender_chest' />{libraryEnv}
                                 </DrawingDecorator>
                                 <ServerQuitWhenAnyAgentFinishes/>
                                     
