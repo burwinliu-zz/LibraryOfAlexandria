@@ -31,7 +31,7 @@ import time
 import json
 from priority_dict import priorityDictionary as PQ
 
-agent_position = 7
+agent_position = 0
 num_moves = 0
 
 
@@ -78,7 +78,6 @@ def GetMissionXML(obs_size):
                                 <FlatWorldGenerator generatorString="3;7,2;1;"/>
                                 <DrawingDecorator>
                                     {libraryEnv}
-                                    <DrawBlock x='0' y='2' z='1' type='ender_chest' />
                                     <DrawBlock x='0' y='1' z='0' type='emerald_block' />
                                 </DrawingDecorator>
                                 <ServerQuitWhenAnyAgentFinishes/>
@@ -148,33 +147,38 @@ def moveToChest(arg_agent_host, chest_num):
     if agent_position == chest_num:
         return
     print(f"Moving to chest #{chest_num} ..", end=' ')
-    if chest_num == 7:  # if moving to ender chest
-        while agent_position < 6:  # move to chest 6
-            moveRight(arg_agent_host, 2)
-            agent_position += 1
-        moveRight(arg_agent_host, 3)  # move to ender chest
-        agent_position = 7
-        print("done")
-        return
-    if agent_position == 7:  # if starting at ender chest
-        moveLeft(arg_agent_host, 3)  # move to chest 6
-        agent_position = 6
-        while chest_num < agent_position:  # move to chest
-            print(chest_num, agent_position)
-            moveLeft(arg_agent_host, 2)
-            agent_position -= 1
-        print("done")
-        return
-    # moving chest -> chest
-    if agent_position > chest_num:  # if chest is on the left
-        while agent_position > chest_num:
-            moveLeft(arg_agent_host, 2)
-            agent_position -= 1
-    elif agent_position < chest_num:  # if chest is on the right
-        while agent_position < chest_num:
-            moveRight(arg_agent_host, 2)
-            agent_position += 1
-    print("done")
+    if agent_position - chest_num < 0:
+        moveLeft(arg_agent_host, 2*abs(agent_position - chest_num))
+    else:
+        moveRight(arg_agent_host, 2 * abs(agent_position - chest_num))
+    agent_position = chest_num
+    # if chest_num == 7:  # if moving to ender chest
+    #     while agent_position < 6:  # move to chest 6
+    #         moveRight(arg_agent_host, 2)
+    #         agent_position += 1
+    #     moveRight(arg_agent_host, 3)  # move to ender chest
+    #     agent_position = 7
+    #     print("done")
+    #     return
+    # if agent_position == 7:  # if starting at ender chest
+    #     moveLeft(arg_agent_host, 3)  # move to chest 6
+    #     agent_position = 6
+    #     while chest_num < agent_position:  # move to chest
+    #         print(chest_num, agent_position)
+    #         moveLeft(arg_agent_host, 2)
+    #         agent_position -= 1
+    #     print("done")
+    #     return
+    # # moving chest -> chest
+    # if agent_position > chest_num:  # if chest is on the left
+    #     while agent_position > chest_num:
+    #         moveLeft(arg_agent_host, 2)
+    #         agent_position -= 1
+    # elif agent_position < chest_num:  # if chest is on the right
+    #     while agent_position < chest_num:
+    #         moveRight(arg_agent_host, 2)
+    #         agent_position += 1
+    # print("done")
 
 
 def openChest(arg_agent):
@@ -228,10 +232,17 @@ def invAction(agent_host, action, inv_index, chest_index):
 
 
 def bruteForceRetrieve(arg_agent, values: dict, size):
-    for i in range(1, size+1):
+    for i in range(1, size):
         moveToChest(arg_agent, i)
+        time.sleep(.2)
+        openChest(arg_agent)
+        time.sleep(.2)
         valuesExisting = getItemsInChest(arg_agent)
+        time.sleep(.2)
+        closeChest(arg_agent)
+        time.sleep(.2)
         print(valuesExisting)
+    moveToChest(arg_agent, 0)
 
 
 # Testing and enviornment
@@ -258,10 +269,10 @@ def setupEnv(env_agent, env_size, env_items):
                 num += 1
             elif chest_num < env_size - 1:
                 chests[chest_num + 1][item] += chests[chest_num][item]
-        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 3} 1 0 minecraft:diamond_block 2 replace")
-        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 3} 2 1 "
+        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 2} 1 0 minecraft:diamond_block 2 replace")
+        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 2} 2 1 "
                               f"minecraft:chest 2 replace {{Items:[{itemString[:-1]}]}}")
-    env_agent.sendCommand(f"chat /setblock 0 2 1 minecraft:white_shulker_box 0 replace")
+    env_agent.sendCommand(f"chat /setblock 0 2 1 minecraft:chest 0 replace")
     print("done")
 
 
@@ -376,22 +387,22 @@ if __name__ == '__main__':
             print("Error:", error.text)
 
     print()
-    print("Mission running..")
+    print("Test Missions running..")
     # Setup env here, and being running test run
 
     # testRun2(agent_host)
 
     print()
-    print("Mission ended")
+    print("Mission ended\n")
 
-    toRetrieve = ""
+    toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
     while toRetrieve != "q":
         size = 5
-        items = {'stone': 64, 'diamond': 64}
+        items = {'stone': 256, 'diamond': 64}
 
         setupEnv(agent_host, size, items)
-        toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+
         toGet = {}
         total = 0
         for item in toRetrieve.split(";"):
@@ -408,3 +419,8 @@ if __name__ == '__main__':
         # Methods 1, Brute Force
         print(agent_position)
         bruteForceRetrieve(agent_host, toGet, 6)
+        world_state = agent_host.getWorldState()
+        for error in world_state.errors:
+            print("Error:", error.text)
+        print("Ended")
+        toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
