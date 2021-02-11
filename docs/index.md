@@ -2,8 +2,7 @@
 layout: default
 title:  Home
 ---
-![Library](static/library.png =250x)
-
+<img src="static/library.png" style="width:200px;"/>
 Source code: [https://github.com/burwinliu/LibraryOfAlexandria](https://github.com/burwinliu/LibraryOfAlexandria)
 
 Reports:
