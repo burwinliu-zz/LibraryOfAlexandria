@@ -20,7 +20,7 @@ The Library of Alexandria was one of the most complicated libraries of its time.
 
 The Library is currently being catalogued...
 
-![Library's Shelves](./static/Library.png)
+<img src="static/library2.png" style="width:1000px;"/>
 
 
 # Helpful Resources
