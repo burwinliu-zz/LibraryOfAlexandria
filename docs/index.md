@@ -2,6 +2,7 @@
 layout: default
 title:  Home
 ---
+![Library](../src/library.png)
 
 Source code: [https://github.com/burwinliu/LibraryOfAlexandria](https://github.com/burwinliu/LibraryOfAlexandria)
 
@@ -11,34 +12,8 @@ Reports:
 - [Status](status.html)
 - [Final](final.html)
 
-What's Markdown (`.md`)?
-
-Markdown is markup that lets you write hypertext (HTML) documents
-in easy-to-read and easy-to-write plain text.
-No angle brackets `<></>` required for
-paragraphs, lists, blockquotes, tables, etc.
-
-
-This is a paragraph (in Markdown). Some more
-text here.
-
-This is another paragraph.
-
-This is a list:
-
-- Orange
-- Apple
-- Blueberry
-
-$$x^2 = y^2$$
-
-
-Just getting started with Markdown?
-See the [HTML <-> Markdown Quick Reference (Cheat Sheet)][quickref].
-
-
-[quickref]: https://github.com/mundimark/quickrefs/blob/master/HTML.md
-
+## The Problem
+The Library of Alexandria was one of the most complicated libraries of its time. The amount of time it would have taken to find scrolls and books could take hours. Now imagine if the librarian could predict which books and scrolls the pateron wanted. The librarian could re arrange the book shelves to keep highly requested items closer to the main desk. This is the issue that the Library of Alexandria Minecraft AI wants to solve.
 
 
 
