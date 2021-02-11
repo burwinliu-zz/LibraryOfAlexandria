@@ -191,12 +191,6 @@ def _swap_item_to_inventory(arg_agent, pos_chest, pos_inventory):
     print(f"swapInventoryItems {pos_inventory} Chest:{pos_chest} ")
 
 
-def _print_contents(obs):
-    for i in range(0, 39):
-        key = 'container.chestSlot_' + str(i) + '_item'
-        if key in obs:
-            print(f" At pos {key} value {obs[key]}")
-
 def printItemsInChest(agent_host):
     items = {}
     world_state = agent_host.getWorldState()
@@ -213,51 +207,107 @@ def printItemsInChest(agent_host):
 
     print("Items in this chest:")
     print("________________________")
-    for key,value in items.items():
+    for key, value in items.items():
         print(f"{key} :: {value}")
     print("________________________\n\n")
+
 
 def invAction(agent_host, action, inv_index, chest_index):
     world_state = agent_host.getWorldState()
     obs = json.loads(world_state.observations[-1].text)
     chestName = obs["inventoriesAvailable"][-1]['name']
     chestSize = obs["inventoriesAvailable"][-1]['size']
+    print(chestName)
     agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
 
+
+def setupEnv(env_agent, env_size, env_items):
+    print("Setting up chests..", end=' ')
+
+    chests = [{} for _ in range(env_size)]
+    for i, j in env_items.items():
+        for _ in range(j):
+            nChest = int(random() * env_size)
+            if i not in chests[nChest]:
+                chests[nChest][i] = 0
+            chests[nChest][i] += 1
+    for chest_num in range(env_size):
+        num = 0
+        itemString = ""
+        for item in chests[chest_num].keys():
+            while chests[chest_num][item] > 64 and num < 28:
+                itemString += f"{{Slot:{num}, id:{item},Count:{64}b}},"
+                num += 1
+                chests[chest_num][item] -= 64
+            if chests[chest_num][item] < 64 and num < 28:
+                itemString += f"{{Slot:{num}, id:{item},Count:{chests[chest_num][item]}b}},"
+                num += 1
+            elif chest_num < env_size - 1:
+                chests[chest_num + 1][item] += chests[chest_num][item]
+        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 3} 1 0 minecraft:diamond_block 2 replace")
+        env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 3} 2 1 "
+                              f"minecraft:chest 2 replace {{Items:[{itemString[:-1]}]}}")
+        print(f"chat /setblock {chest_num * 2 + 3} 2 1 "
+              f"minecraft:chest 2 replace {{Items:[{itemString[:-1]}]}}")
+    print("done")
+
+
 def testRun2(agent_host):
+    size = 6
+    items = {'stone': 64, 'diamond': 64}
+
+    setupEnv(agent_host, size, items)
     time.sleep(1)
-    moveToChest(agent_host, 6); time.sleep(0.5)
-    openChest(agent_host); time.sleep(0.5)
-    printItemsInChest(agent_host); time.sleep(0.5)
-    invAction(agent_host, "swap", 0, 0); time.sleep(0.25)
-    invAction(agent_host, "swap", 1, 1); time.sleep(0.25)
-    closeChest(agent_host); time.sleep(0.5)
-    for i in reversed(range(1,6)):
-        moveToChest(agent_host, i); time.sleep(0.5)
-        openChest(agent_host); time.sleep(0.5)
-        printItemsInChest(agent_host); time.sleep(0.5)
-        invAction(agent_host, "combine", 0, 0); time.sleep(0.25)
-        invAction(agent_host, "combine", 1, 1); time.sleep(0.25)
-        closeChest(agent_host); time.sleep(0.5)
-    moveToChest(agent_host, 7); time.sleep(0.5)
-    openChest(agent_host); time.sleep(0.5)
-    printItemsInChest(agent_host); time.sleep(0.5)
-    invAction(agent_host, "swap", 0, 0); time.sleep(0.25)
-    invAction(agent_host, "swap", 1, 1); time.sleep(0.25)
-    printItemsInChest(agent_host); time.sleep(0.5)
-    closeChest(agent_host); time.sleep(0.5)
+    moveToChest(agent_host, 6)
+    time.sleep(0.5)
+    openChest(agent_host)
+    time.sleep(0.5)
+    printItemsInChest(agent_host)
+    time.sleep(0.5)
+    invAction(agent_host, "swap", 0, 0)
+    time.sleep(0.25)
+    invAction(agent_host, "swap", 1, 1)
+    time.sleep(0.25)
+    closeChest(agent_host)
+    time.sleep(0.5)
+    for i in reversed(range(1, 6)):
+        moveToChest(agent_host, i)
+        time.sleep(0.5)
+        openChest(agent_host)
+        time.sleep(0.5)
+        printItemsInChest(agent_host)
+        time.sleep(0.5)
+        invAction(agent_host, "combine", 0, 0)
+        time.sleep(0.25)
+        invAction(agent_host, "combine", 1, 1)
+        time.sleep(0.25)
+        closeChest(agent_host)
+        time.sleep(0.5)
+    moveToChest(agent_host, 7)
+    time.sleep(0.5)
+    openChest(agent_host)
+    time.sleep(0.5)
+    printItemsInChest(agent_host)
+    time.sleep(0.5)
+    invAction(agent_host, "swap", 0, 0)
+    time.sleep(0.25)
+    invAction(agent_host, "swap", 1, 1)
+    time.sleep(0.25)
+    printItemsInChest(agent_host)
+    time.sleep(0.5)
+    closeChest(agent_host)
+    time.sleep(0.5)
+
 
 def testRun(agent_host):
+    size = 6
+    items = {'stone': 64, 'diamond': 64}
+
+    setupEnv(agent_host, size, items)
     time.sleep(1)
     moveToChest(agent_host, 3)
     time.sleep(1)
     openChest(agent_host)
-    time.sleep(1)
-    state = agent_host.getWorldState()
-    if state.number_of_observations_since_last_state > 0:
-        obs = json.loads(state.observations[-1].text)
-        if u'inventoriesAvailable' in obs:
-            _print_contents(obs)
     time.sleep(1)
     _swap_item_to_inventory(agent_host, 0, 0)
     time.sleep(1)
@@ -315,30 +365,25 @@ if __name__ == '__main__':
 
     print()
     print("Mission running..")
-
-    print("Setting up chests..", end=' ')
-    size = 6
-    items = {'stone': 50, 'diamond': 30}
-
-    chests = [{} for _ in range(size)]
-    for i, j in items.items():
-        for _ in range(j):
-            nChest = int(random() * size)
-            if i not in chests[nChest]:
-                chests[nChest][i] = 0
-            chests[nChest][i] += 1
-    for chest_num in range(size):
-        # /setblock ~3 ~2 ~1 minecraft:chest 2 replace {Items:[{Slot:0,id:stone,Count:1b}]}
-
-        itemString = ",".join([f"{{Slot:{num}, id:{value[0]},Count:{value[1]}b}}"
-                               for num, value in enumerate(chests[chest_num].items())])
-        agent_host.sendCommand(f"chat /setblock {chest_num * 2 + 3} 1 0 minecraft:diamond_block 2 replace")
-        agent_host.sendCommand(f"chat /setblock {chest_num * 2 + 3} 2 1 "
-                               f"minecraft:chest 2 replace {{Items:[{itemString}]}}")
-    print("done")
+    # Setup env here, and being running test run
 
     testRun2(agent_host)
     end(agent_host, world_state)
 
     print()
     print("Mission ended")
+
+    toRetrieve = ""
+
+    while toRetrieve != "q":
+        toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+        toGet = {}
+        for item in toRetrieve.split(";"):
+            try:
+                key, value = item.split(":")
+                toGet[key.strip()] = int(value)
+            except Exception as e:
+                print(f"Invalid input of '{item}', disregarding as {e}")
+        print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+
+
