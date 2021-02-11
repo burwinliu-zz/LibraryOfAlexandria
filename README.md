@@ -7,3 +7,5 @@ Note that for space sake, I have not included a large amount of the files assosc
 
 # Credits
 icon.svg is from https://iconmonstr.com/
+<br/>
+library.png from https://imgur.com/a/99GoP
