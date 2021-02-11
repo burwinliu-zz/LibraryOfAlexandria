@@ -92,17 +92,14 @@ def GetMissionXML():
                             <Name>Librarian</Name>
                             <AgentStart>
                                 <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
-                                <Inventory>
-                                    <InventoryItem slot="0" type="diamond_pickaxe"/>
-                                </Inventory>
                             </AgentStart>
                             <AgentHandlers>
                                 <ContinuousMovementCommands/>
                                 <DiscreteMovementCommands/>
                                 <ChatCommands/>
+                                <ObservationFromFullStats/>
                                 <InventoryCommands/>
                                 <ObservationFromFullInventory/>
-                                <ObservationFromFullStats/>
                                 <ObservationFromRay/>
                                 <ObservationFromGrid>
                                     <Grid name="floorAll">
@@ -200,6 +197,55 @@ def _print_contents(obs):
         if key in obs:
             print(f" At pos {key} value {obs[key]}")
 
+def printItemsInChest(agent_host):
+    items = {}
+    world_state = agent_host.getWorldState()
+    obs = json.loads(world_state.observations[-1].text)
+    chestName = obs["inventoriesAvailable"][-1]['name']
+    chestSize = obs["inventoriesAvailable"][-1]['size']
+    for i in range(chestSize):
+        item = obs[f"container.{chestName}Slot_{i}_item"]
+        if item == 'air':
+            continue
+        if item not in items:
+            items[item] = 0
+        items[item] += obs[f"container.{chestName}Slot_{i}_size"]
+
+    print("Items in this chest:")
+    print("________________________")
+    for key,value in items.items():
+        print(f"{key} :: {value}")
+    print("________________________\n\n")
+
+def invAction(agent_host, action, inv_index, chest_index):
+    world_state = agent_host.getWorldState()
+    obs = json.loads(world_state.observations[-1].text)
+    chestName = obs["inventoriesAvailable"][-1]['name']
+    chestSize = obs["inventoriesAvailable"][-1]['size']
+    agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+
+def testRun2(agent_host):
+    time.sleep(1)
+    moveToChest(agent_host, 6); time.sleep(0.5)
+    openChest(agent_host); time.sleep(0.5)
+    printItemsInChest(agent_host); time.sleep(0.5)
+    invAction(agent_host, "swap", 0, 0); time.sleep(0.25)
+    invAction(agent_host, "swap", 1, 1); time.sleep(0.25)
+    closeChest(agent_host); time.sleep(0.5)
+    for i in reversed(range(1,6)):
+        moveToChest(agent_host, i); time.sleep(0.5)
+        openChest(agent_host); time.sleep(0.5)
+        printItemsInChest(agent_host); time.sleep(0.5)
+        invAction(agent_host, "combine", 0, 0); time.sleep(0.25)
+        invAction(agent_host, "combine", 1, 1); time.sleep(0.25)
+        closeChest(agent_host); time.sleep(0.5)
+    moveToChest(agent_host, 7); time.sleep(0.5)
+    openChest(agent_host); time.sleep(0.5)
+    printItemsInChest(agent_host); time.sleep(0.5)
+    invAction(agent_host, "swap", 0, 0); time.sleep(0.25)
+    invAction(agent_host, "swap", 1, 1); time.sleep(0.25)
+    printItemsInChest(agent_host); time.sleep(0.5)
+    closeChest(agent_host); time.sleep(0.5)
 
 def testRun(agent_host):
     time.sleep(1)
@@ -291,7 +337,7 @@ if __name__ == '__main__':
                                f"minecraft:chest 2 replace {{Items:[{itemString}]}}")
     print("done")
 
-    testRun(agent_host)
+    testRun2(agent_host)
     end(agent_host, world_state)
 
     print()
