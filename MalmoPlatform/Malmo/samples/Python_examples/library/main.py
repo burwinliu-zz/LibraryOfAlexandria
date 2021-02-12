@@ -144,6 +144,8 @@ def moveToChest(arg_agent_host, chest_num):
 
 
 def openChest(arg_agent):
+    global num_moves
+    num_moves += 10
     arg_agent.sendCommand("use 1")
     time.sleep(0.1)
     arg_agent.sendCommand("use 0")
