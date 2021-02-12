@@ -150,7 +150,7 @@ def moveToChest(arg_agent_host, chest_num):
     if agent_position == chest_num:
         return
     if chest_num != -1:
-        print(f"Moving to chest #{chest_num} ..", end=' ')
+        print(f"Moving to chest #{chest_num} ..")
     if agent_position - chest_num < 0:
         moveLeft(arg_agent_host, 2*abs(agent_position - chest_num))
     else:
@@ -226,27 +226,83 @@ def printItemsInDict(items):
     print("________________________\n\n")
 
 
-def invAction(agent_host, action, inv_index, chest_index):
-    world_state = agent_host.getWorldState()
-    obs = json.loads(world_state.observations[-1].text)
+def invAction(agent_host, action, inv_index, chest_index, obs=None):
+    if obs is None:
+        obs = json.loads(world_state.observations[-1].text)
+    chestName = obs["inventoriesAvailable"][-1]['name']
+    agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+    print(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+
+
+def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
+    cur_state = arg_agent.getWorldState()
+    obs = json.loads(cur_state.observations[-1].text)
     chestName = obs["inventoriesAvailable"][-1]['name']
     chestSize = obs["inventoriesAvailable"][-1]['size']
-    print(chestName)
-    agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+    for i in range(chestSize):
+        if f"container.{chestName}Slot_{i}_item" in obs:
+            item = obs[f"container.{chestName}Slot_{i}_item"]
+            if item == 'air':
+                continue
+            if item in searching:
+                itemHad = obs[f"container.{chestName}Slot_{i}_size"]
+                while len(inventoryNeeds) != 0 and len(searching[item]) != 0 and\
+                        inventoryNeeds[searching[item][-1]][1] < itemHad:
+                    itemHad -= inventoryNeeds[searching[item][-1]][1]
+                    ordersMet += 1
+                    inventoryNeeds[searching[item][-1]][1] = 0
+                    time.sleep(.2)
+                    invAction(arg_agent, "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+                              searching[item][-1], i, obs=obs)
+                    if len(searching[item]) == 1:
+                        del searching[item][-1]
+                        break
+                    else:
+                        searching[item].pop()
+                if len(searching[item]) != 0:
+                    inventoryNeeds[searching[item][-1]][1] -= itemHad
+                    time.sleep(.2)
+                    invAction(arg_agent, "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+                              searching[item][-1], i, obs=obs)
+    return searching, inventoryNeeds, ordersMet
+
 
 
 def bruteForceRetrieve(arg_agent, values: dict, size):
+    # Reformatting the values into easily distributable sections (stacks of 64 presumed)
+    inventoryNeeds = []
+    toFill = {}
+    for i in values.keys():
+        if i not in toFill:
+            toFill[i] = []
+        while values[i] > 64:
+            inventoryNeeds.append([i, 64])
+            values[i] -= 64
+            toFill[i].append(len(inventoryNeeds)-1)
+        inventoryNeeds.append([i, values[i]])
+        toFill[i].append(len(inventoryNeeds) - 1)
+    ordersMet = 0
     for i in range(1, size):
         moveToChest(arg_agent, i)
         time.sleep(.2)
         openChest(arg_agent)
         time.sleep(.2)
-        valuesExisting = getItemsInChest(arg_agent)
+        toFill, inventoryNeeds, ordersMet = getItems(arg_agent, toFill, inventoryNeeds, ordersMet)
+        # Retrieve all items into the spaces, as needed
         time.sleep(.2)
         closeChest(arg_agent)
         time.sleep(.2)
-        print(valuesExisting)
+        if len(inventoryNeeds) == ordersMet:
+            break
     moveToChest(arg_agent, 0)
+    time.sleep(.2)
+    cur_state = arg_agent.getWorldState()
+    obs = json.loads(cur_state.observations[-1].text)
+    openChest(arg_agent)
+    time.sleep(.2)
+    for i in range(27):
+        invAction(arg_agent, "swap", i, i, obs=obs)
+        time.sleep(.2)
 
 
 # Testing and enviornment
@@ -395,7 +451,7 @@ if __name__ == '__main__':
     print("Test Missions running..")
     # Setup env here, and being running test run
 
-    # testRun2(agent_host)
+    #testRun2(agent_host)
 
     print()
     print("Mission ended\n")
