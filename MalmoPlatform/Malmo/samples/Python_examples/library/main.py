@@ -36,28 +36,29 @@ num_moves = 0
 
 
 def GetMissionXML(obs_size):
-    front = "<DrawCuboid x1='15' y1='0' z1='2' x2='-2' y2='10' z2='2' type='bookshelf' />"
-    right = "<DrawCuboid x1='-2' y1='0' z1='2' x2='-2' y2='10' z2='-10' type='bookshelf' />"
-    left = "<DrawCuboid x1='15' y1='0' z1='2' x2='15' y2='10' z2='-10' type='bookshelf' />"
-    back = "<DrawCuboid x1='15' y1='0' z1='-10' x2='-2' y2='10' z2='-10' type='bookshelf' />"
-    roof = "<DrawCuboid x1='15' y1='10' z1='-10' x2='-2' y2='10' z2='2' type='bookshelf' />"
-    floor = "<DrawCuboid x1='15' y1='1' z1='-10' x2='-2' y2='1' z2='2' type='bookshelf' />"
+    leftX = obs_size * 2 + 2
+    backZ = -obs_size * 2
+    front = f"<DrawCuboid x1='{leftX}' y1='0' z1='2' x2='-4' y2='10' z2='2' type='bookshelf' />"
+    right = f"<DrawCuboid x1='-4' y1='0' z1='2' x2='-4' y2='10' z2='-10' type='bookshelf' />"
+    left = f"<DrawCuboid x1='{leftX}' y1='0' z1='2' x2='{leftX}' y2='10' z2='-10' type='bookshelf' />"
+    back = f"<DrawCuboid x1='{leftX}' y1='0' z1='-10' x2='-4' y2='10' z2='-10' type='bookshelf' />"
+    floor = f"<DrawCuboid x1='{leftX}' y1='1' z1='-10' x2='-4' y2='1' z2='2' type='bookshelf' />"
     torches = ""
-    for i in range(-1, 15, 2):
-        torches += f"<DrawBlock x='{i}' y='5' z='1' type='torch' face='NORTH' />"
-        torches += f"<DrawBlock x='{i}' y='7' z='1' type='torch' face='NORTH' />"
-        torches += f"<DrawBlock x='{i}' y='9' z='1' type='torch' face='NORTH' />"
-        torches += f"<DrawBlock x='{i}' y='5' z='-9' type='torch' face='SOUTH' />"
-        torches += f"<DrawBlock x='{i}' y='7' z='-9' type='torch' face='SOUTH' />"
-        torches += f"<DrawBlock x='{i}' y='9' z='-9' type='torch' face='SOUTH' />"
-    for i in range(-9, 2, 2):
-        torches += f"<DrawBlock x='14' y='5' z='{i}' type='torch' face='WEST' />"
-        torches += f"<DrawBlock x='14' y='7' z='{i}' type='torch' face='WEST' />"
-        torches += f"<DrawBlock x='14' y='9' z='{i}' type='torch' face='WEST' />"
-        torches += f"<DrawBlock x='-1' y='5' z='{i}' type='torch' face='EAST' />"
-        torches += f"<DrawBlock x='-1' y='7' z='{i}' type='torch' face='EAST' />"
-        torches += f"<DrawBlock x='-1' y='9' z='{i}' type='torch' face='EAST' />"
-    libraryEnv = front + right + left + back + roof + floor + torches
+    # for i in range(-1, 15, 2):
+    #     torches += f"<DrawBlock x='{i}' y='5' z='1' type='torch' face='NORTH' />"
+    #     torches += f"<DrawBlock x='{i}' y='7' z='1' type='torch' face='NORTH' />"
+    #     torches += f"<DrawBlock x='{i}' y='9' z='1' type='torch' face='NORTH' />"
+    #     torches += f"<DrawBlock x='{i}' y='5' z='-9' type='torch' face='SOUTH' />"
+    #     torches += f"<DrawBlock x='{i}' y='7' z='-9' type='torch' face='SOUTH' />"
+    #     torches += f"<DrawBlock x='{i}' y='9' z='-9' type='torch' face='SOUTH' />"
+    # for i in range(-9, 2, 2):
+    #     torches += f"<DrawBlock x='14' y='5' z='{i}' type='torch' face='WEST' />"
+    #     torches += f"<DrawBlock x='14' y='7' z='{i}' type='torch' face='WEST' />"
+    #     torches += f"<DrawBlock x='14' y='9' z='{i}' type='torch' face='WEST' />"
+    #     torches += f"<DrawBlock x='-1' y='5' z='{i}' type='torch' face='EAST' />"
+    #     torches += f"<DrawBlock x='-1' y='7' z='{i}' type='torch' face='EAST' />"
+    #     torches += f"<DrawBlock x='-1' y='9' z='{i}' type='torch' face='EAST' />"
+    libraryEnv = front + right + left + back + floor + torches
 
     return f'''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -78,6 +79,7 @@ def GetMissionXML(obs_size):
                                 <FlatWorldGenerator generatorString="3;7,2;1;"/>
                                 <DrawingDecorator>
                                     {libraryEnv}
+                                    <DrawBlock x='-2' y='1' z='0' type='iron_block' />
                                     <DrawBlock x='0' y='1' z='0' type='emerald_block' />
                                 </DrawingDecorator>
                                 <ServerQuitWhenAnyAgentFinishes/>
@@ -104,9 +106,10 @@ def GetMissionXML(obs_size):
                                         <max x="{int(obs_size / 2)}" y="0" z="{int(obs_size / 2)}"/>
                                     </Grid>
                                 </ObservationFromGrid>
-                                <AgentQuitFromReachingPosition>
-                                    <Marker x="15" y="2" z="0.5" tolerance="0.5" description="Goal_found"/>
+                                <AgentQuitFromTouchingBlockType>
+                                    <Block type="iron_block"/>
                                 </AgentQuitFromReachingPosition>
+                                
                             </AgentHandlers>
                         </AgentSection>
                     </Mission>'''
@@ -116,12 +119,12 @@ def end(arg_agent_host, arg_world_state):
     print("Ending Mission", end=' ')
     while arg_world_state.is_mission_running:
         print(".", end="")
-        arg_agent_host.sendCommand("moveeast")
+        moveToChest(arg_agent_host, -1)
         time.sleep(0.1)
         arg_world_state = arg_agent_host.getWorldState()
         for end_error in world_state.errors:
             print("Error:", end_error.text)
-
+    print()
 
 def moveLeft(arg_agent_host, steps):
     global num_moves
@@ -146,7 +149,8 @@ def moveToChest(arg_agent_host, chest_num):
 
     if agent_position == chest_num:
         return
-    print(f"Moving to chest #{chest_num} ..", end=' ')
+    if chest_num != -1:
+        print(f"Moving to chest #{chest_num} ..", end=' ')
     if agent_position - chest_num < 0:
         moveLeft(arg_agent_host, 2*abs(agent_position - chest_num))
     else:
@@ -365,9 +369,10 @@ def testRun(agent_host):
 if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
+    size = 50
 
     # todo adapt to inputted sizes
-    my_mission = MalmoPython.MissionSpec(GetMissionXML(5), True)
+    my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
     my_mission_record = MalmoPython.MissionRecordSpec()
     my_mission.requestVideo(800, 500)
     my_mission.setViewpoint(1)
@@ -398,7 +403,6 @@ if __name__ == '__main__':
     toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
     while toRetrieve != "q":
-        size = 5
         items = {'stone': 256, 'diamond': 64}
 
         setupEnv(agent_host, size, items)
@@ -418,9 +422,10 @@ if __name__ == '__main__':
 
         # Methods 1, Brute Force
         print(agent_position)
-        bruteForceRetrieve(agent_host, toGet, 6)
+        bruteForceRetrieve(agent_host, toGet, size)
         world_state = agent_host.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
         print("Ended")
+        end(agent_host, world_state)
         toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
