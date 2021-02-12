@@ -29,11 +29,13 @@ import os
 import sys
 import time
 import json
-from priority_dict import priorityDictionary as PQ
+import matplotlib.pyplot as plt
+from numpy.random import randint
 
 agent_position = 0
 num_moves = 0
 
+diamond_distribution = 0.2;
 
 def GetMissionXML(obs_size):
     leftX = obs_size * 2 + 2
@@ -244,18 +246,18 @@ def bruteForceRetrieve(arg_agent, values: dict, size):
     ordersMet = 0
     for i in range(1, size):
         moveToChest(arg_agent, i)
-        time.sleep(.2)
+        time.sleep(.5)
         openChest(arg_agent)
-        time.sleep(.2)
+        time.sleep(.5)
         toFill, inventoryNeeds, ordersMet = getItems(arg_agent, toFill, inventoryNeeds, ordersMet)
         # Retrieve all items into the spaces, as needed
-        time.sleep(.2)
+        time.sleep(.5)
         closeChest(arg_agent)
-        time.sleep(.2)
+        time.sleep(.5)
         if len(inventoryNeeds) == ordersMet:
             break
     moveToChest(arg_agent, 0)
-    time.sleep(.2)
+    time.sleep(.5)
     cur_state = arg_agent.getWorldState()
     obs = json.loads(cur_state.observations[-1].text)
     openChest(arg_agent)
@@ -263,7 +265,7 @@ def bruteForceRetrieve(arg_agent, values: dict, size):
     for i in range(27):
         invAction(arg_agent, "swap", i, i, obs=obs)
         time.sleep(.2)
-
+    
 
 # Testing and enviornment
 def setupEnv(env_agent, env_size, env_items):
@@ -382,10 +384,23 @@ def testRun(agent_host):
     closeChest(agent_host)
     time.sleep(1)
 
-
+def fillRandomInput(inputs):
+    global diamond_distribution
+    
+    input_stream = [];
+    for x in range(inputs):
+        appendValue = ""
+        if(randint(101)/100 < diamond_distribution):
+            appendValue += "diamond:{}".format(randint(5) + 1)
+        else:
+            appendValue += "stone:{}".format(randint(20) + 1)
+        input_stream.append(appendValue)
+    return input_stream
+    
 if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
+    
     size = 1
 
     # todo adapt to inputted sizes
@@ -416,34 +431,152 @@ if __name__ == '__main__':
 
     print()
     print("Mission ended\n")
+    trackSteps = [];
+    runMode = input("Enter r to generate random values and u to input user values: ")
+    if(runMode == "r"):
+        
+        userInput = fillRandomInput(100)
+        print(userInput)
+        for toRetrieve in userInput:
+            size = 50
 
-    toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+            # todo adapt to inputted sizes
+            my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
+            my_mission_record = MalmoPython.MissionRecordSpec()
+            my_mission.requestVideo(800, 500)
+            my_mission.setViewpoint(1)
+            # Attempt to start a mission:
+            max_retries = 3
+            my_clients = MalmoPython.ClientPool()
+            my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
+           
+            for retry in range(max_retries):
+                try:
+                    agent_host.startMission( my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', retry) )
+                    break
+                except RuntimeError as e:
+                    if retry == max_retries - 1:
+                        print("Error starting mission", (retry), ":",e)
+                        exit(1)
+                    else:
+                        time.sleep(2)
+            # Loop until mission starts:
+            print("Waiting for the mission to start ", end=' ')
+            world_state = agent_host.getWorldState()
+            while not world_state.has_mission_begun:
+                print(".", end="")
+                time.sleep(0.1)
+                world_state = agent_host.getWorldState()
+                for error in world_state.errors:
+                    print("Error:", error.text)
+        
+            print()
+            items = {'stone': 256, 'diamond': 64}
 
-    # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
-    while toRetrieve != "q":
-        items = {'stone': 1000, 'diamond': 64}
+            setupEnv(agent_host, size, items)
+    
+            toGet = {}
+            total = 0
+            for item in toRetrieve.split(";"):
+                try:
+                    key, value = item.split(":")
+                    toGet[key.strip()] = int(value)
+                    total += int(value)
+    
+                except Exception as e:
+                    print(f"Invalid input of '{item}', disregarding as {e}")
+            # TODO reformat to ensure that it is possible to retrieve items
+            print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+            
+            # Methods 1, Brute Force
+         
+          
+                
+            bruteForceRetrieve(agent_host, toGet, size)
+            world_state = agent_host.getWorldState()
+            for error in world_state.errors:
+                print("Error:", error.text)
+            print("Ended")
+            end(agent_host, world_state)
+            if(toRetrieve.split(':')[0] == 'stone'):
+                if(int(toRetrieve.split(':')[1]) != 0):
+                    trackSteps.append(num_moves/int(toRetrieve.split(':')[1]) * 0.8)
+                else:
+                    trackSteps.append(0)
 
-        setupEnv(agent_host, size, items)
+            else:
+                if(int(toRetrieve.split(':')[1]) != 0):
+                    trackSteps.append(num_moves/int(toRetrieve.split(':')[1]) * 0.2)
+                else:
+                    trackSteps.append(0)
 
-        toGet = {}
-        total = 0
-        for item in toRetrieve.split(";"):
-            try:
-                key, value = item.split(":")
-                toGet[key.strip()] = int(value)
-                total += int(value)
+            print(trackSteps)
+            num_moves = 0
+            agent_position = 0
 
-            except Exception as e:
-                print(f"Invalid input of '{item}', disregarding as {e}")
-        # TODO reformat to ensure that it is possible to retrieve items
-        print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
-
-        # Methods 1, Brute Force
-        print(agent_position)
-        bruteForceRetrieve(agent_host, toGet, size)
-        world_state = agent_host.getWorldState()
-        for error in world_state.errors:
-            print("Error:", error.text)
-        print("Ended")
-        end(agent_host, world_state)
+        plt.clf()
+        plt.plot(trackSteps)
+        plt.title('Library')
+        plt.ylabel('Steps')
+        plt.xlabel('Run')
+        plt.savefig('returnsfinalpart.png')
+    else:
         toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+
+        # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
+        while toRetrieve != "q":
+            items = {'stone': 1000, 'diamond': 64}
+
+            setupEnv(agent_host, size, items)
+
+            toGet = {}
+            total = 0
+            for item in toRetrieve.split(";"):
+                try:
+                    key, value = item.split(":")
+                    toGet[key.strip()] = int(value)
+                    total += int(value)
+
+                except Exception as e:
+                    print(f"Invalid input of '{item}', disregarding as {e}")
+            # TODO reformat to ensure that it is possible to retrieve items
+            print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+
+            # Methods 1, Brute Force
+            print(agent_position)
+            bruteForceRetrieve(agent_host, toGet, size)
+            world_state = agent_host.getWorldState()
+            for error in world_state.errors:
+                print("Error:", error.text)
+            print("Ended")
+            end(agent_host, world_state)
+            toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+    
+        # while toRetrieve != "q":
+        #     items = {'stone': 256, 'diamond': 64}
+    
+        #     setupEnv(agent_host, size, items)
+    
+        #     toGet = {}
+        #     total = 0
+        #     for item in toRetrieve.split(";"):
+        #         try:
+        #             key, value = item.split(":")
+        #             toGet[key.strip()] = int(value)
+        #             total += int(value)
+    
+        #         except Exception as e:
+        #             print(f"Invalid input of '{item}', disregarding as {e}")
+        #     # TODO reformat to ensure that it is possible to retrieve items
+        #     print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+    
+        #     # Methods 1, Brute Force
+        #     print(agent_position)
+        #     bruteForceRetrieve(agent_host, toGet, size)
+        #     world_state = agent_host.getWorldState()
+        #     for error in world_state.errors:
+        #         print("Error:", error.text)
+        #     print("Ended")
+        #     end(agent_host, world_state)
+        #     toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+     
