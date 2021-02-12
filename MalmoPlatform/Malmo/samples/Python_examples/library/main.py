@@ -37,28 +37,12 @@ num_moves = 0
 
 def GetMissionXML(obs_size):
     leftX = obs_size * 2 + 2
-    backZ = -obs_size * 2
     front = f"<DrawCuboid x1='{leftX}' y1='0' z1='2' x2='-4' y2='10' z2='2' type='bookshelf' />"
     right = f"<DrawCuboid x1='-4' y1='0' z1='2' x2='-4' y2='10' z2='-10' type='bookshelf' />"
     left = f"<DrawCuboid x1='{leftX}' y1='0' z1='2' x2='{leftX}' y2='10' z2='-10' type='bookshelf' />"
     back = f"<DrawCuboid x1='{leftX}' y1='0' z1='-10' x2='-4' y2='10' z2='-10' type='bookshelf' />"
     floor = f"<DrawCuboid x1='{leftX}' y1='1' z1='-10' x2='-4' y2='1' z2='2' type='bookshelf' />"
-    torches = ""
-    # for i in range(-1, 15, 2):
-    #     torches += f"<DrawBlock x='{i}' y='5' z='1' type='torch' face='NORTH' />"
-    #     torches += f"<DrawBlock x='{i}' y='7' z='1' type='torch' face='NORTH' />"
-    #     torches += f"<DrawBlock x='{i}' y='9' z='1' type='torch' face='NORTH' />"
-    #     torches += f"<DrawBlock x='{i}' y='5' z='-9' type='torch' face='SOUTH' />"
-    #     torches += f"<DrawBlock x='{i}' y='7' z='-9' type='torch' face='SOUTH' />"
-    #     torches += f"<DrawBlock x='{i}' y='9' z='-9' type='torch' face='SOUTH' />"
-    # for i in range(-9, 2, 2):
-    #     torches += f"<DrawBlock x='14' y='5' z='{i}' type='torch' face='WEST' />"
-    #     torches += f"<DrawBlock x='14' y='7' z='{i}' type='torch' face='WEST' />"
-    #     torches += f"<DrawBlock x='14' y='9' z='{i}' type='torch' face='WEST' />"
-    #     torches += f"<DrawBlock x='-1' y='5' z='{i}' type='torch' face='EAST' />"
-    #     torches += f"<DrawBlock x='-1' y='7' z='{i}' type='torch' face='EAST' />"
-    #     torches += f"<DrawBlock x='-1' y='9' z='{i}' type='torch' face='EAST' />"
-    libraryEnv = front + right + left + back + floor + torches
+    libraryEnv = front + right + left + back + floor
 
     return f'''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                     <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -126,6 +110,7 @@ def end(arg_agent_host, arg_world_state):
             print("Error:", end_error.text)
     print()
 
+
 def moveLeft(arg_agent_host, steps):
     global num_moves
 
@@ -152,37 +137,10 @@ def moveToChest(arg_agent_host, chest_num):
     if chest_num != -1:
         print(f"Moving to chest #{chest_num} ..")
     if agent_position - chest_num < 0:
-        moveLeft(arg_agent_host, 2*abs(agent_position - chest_num))
+        moveLeft(arg_agent_host, 2 * abs(agent_position - chest_num))
     else:
         moveRight(arg_agent_host, 2 * abs(agent_position - chest_num))
     agent_position = chest_num
-    # if chest_num == 7:  # if moving to ender chest
-    #     while agent_position < 6:  # move to chest 6
-    #         moveRight(arg_agent_host, 2)
-    #         agent_position += 1
-    #     moveRight(arg_agent_host, 3)  # move to ender chest
-    #     agent_position = 7
-    #     print("done")
-    #     return
-    # if agent_position == 7:  # if starting at ender chest
-    #     moveLeft(arg_agent_host, 3)  # move to chest 6
-    #     agent_position = 6
-    #     while chest_num < agent_position:  # move to chest
-    #         print(chest_num, agent_position)
-    #         moveLeft(arg_agent_host, 2)
-    #         agent_position -= 1
-    #     print("done")
-    #     return
-    # # moving chest -> chest
-    # if agent_position > chest_num:  # if chest is on the left
-    #     while agent_position > chest_num:
-    #         moveLeft(arg_agent_host, 2)
-    #         agent_position -= 1
-    # elif agent_position < chest_num:  # if chest is on the right
-    #     while agent_position < chest_num:
-    #         moveRight(arg_agent_host, 2)
-    #         agent_position += 1
-    # print("done")
 
 
 def openChest(arg_agent):
@@ -213,7 +171,6 @@ def getItemsInChest(agent_host):
             if item not in items:
                 items[item] = 0
             items[item] += obs[f"container.{chestName}Slot_{i}_size"]
-
 
     return items
 
@@ -246,13 +203,14 @@ def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
                 continue
             if item in searching:
                 itemHad = obs[f"container.{chestName}Slot_{i}_size"]
-                while len(inventoryNeeds) != 0 and len(searching[item]) != 0 and\
+                while len(inventoryNeeds) != 0 and len(searching[item]) != 0 and \
                         inventoryNeeds[searching[item][-1]][1] < itemHad:
                     itemHad -= inventoryNeeds[searching[item][-1]][1]
                     ordersMet += 1
                     inventoryNeeds[searching[item][-1]][1] = 0
                     time.sleep(.2)
-                    invAction(arg_agent, "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+                    invAction(arg_agent,
+                              "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
                               searching[item][-1], i, obs=obs)
                     if len(searching[item]) == 1:
                         del searching[item][-1]
@@ -262,10 +220,10 @@ def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
                 if len(searching[item]) != 0:
                     inventoryNeeds[searching[item][-1]][1] -= itemHad
                     time.sleep(.2)
-                    invAction(arg_agent, "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+                    invAction(arg_agent,
+                              "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
                               searching[item][-1], i, obs=obs)
     return searching, inventoryNeeds, ordersMet
-
 
 
 def bruteForceRetrieve(arg_agent, values: dict, size):
@@ -278,7 +236,7 @@ def bruteForceRetrieve(arg_agent, values: dict, size):
         while values[i] > 64:
             inventoryNeeds.append([i, 64])
             values[i] -= 64
-            toFill[i].append(len(inventoryNeeds)-1)
+            toFill[i].append(len(inventoryNeeds) - 1)
         inventoryNeeds.append([i, values[i]])
         toFill[i].append(len(inventoryNeeds) - 1)
     ordersMet = 0
@@ -316,6 +274,7 @@ def setupEnv(env_agent, env_size, env_items):
             if i not in chests[nChest]:
                 chests[nChest][i] = 0
             chests[nChest][i] += 1
+    # 7 max slots per
     for chest_num in range(env_size):
         num = 0
         itemString = ""
@@ -425,7 +384,7 @@ def testRun(agent_host):
 if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
-    size = 50
+    size = 1
 
     # todo adapt to inputted sizes
     my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
@@ -451,15 +410,16 @@ if __name__ == '__main__':
     print("Test Missions running..")
     # Setup env here, and being running test run
 
-    #testRun2(agent_host)
+    # testRun2(agent_host)
 
     print()
     print("Mission ended\n")
 
     toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
+    # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
     while toRetrieve != "q":
-        items = {'stone': 256, 'diamond': 64}
+        items = {'stone': 1000, 'diamond': 64}
 
         setupEnv(agent_host, size, items)
 
