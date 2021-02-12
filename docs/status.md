@@ -12,3 +12,5 @@ Qualitative
 Quantitative
 
 ## Future Plans
+
+## Resources
