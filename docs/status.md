@@ -1,7 +1,7 @@
 
 ## Video
 
-<iframe width="1000px" src="https://www.youtube.com/embed/4VZZbxWL8jA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: flex;margin-left: auto;margin-right: auto;"/>
+<iframe width="1000px" height="562px" src="https://www.youtube.com/embed/4VZZbxWL8jA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display: flex;margin-left: auto;margin-right: auto;"/>
 
 ## Project Summary
 The goal of our project is to train a Minecraft agent to navigate an environment consisting of a row of n chests and 
