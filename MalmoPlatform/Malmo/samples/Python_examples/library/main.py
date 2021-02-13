@@ -35,8 +35,6 @@ from numpy.random import randint
 agent_position = 0
 num_moves = 0
 
-diamond_distribution = 0.2;
-
 
 def GetMissionXML(obs_size):
     leftX = obs_size * 2 + 2
@@ -383,16 +381,14 @@ def testRun(agent_host):
     time.sleep(1)
 
 
-def fillRandomInput(inputs):
-    global diamond_distribution
-
-    input_stream = [];
+def fillRandomInput(inputs, distribution):
+    input_stream = []
     for x in range(inputs):
         appendValue = ""
-        if randint(101) / 100 < diamond_distribution:
-            appendValue += "diamond:{}".format(randint(5) + 1)
-        else:
-            appendValue += "stone:{}".format(randint(20) + 1)
+        for item, prob in distribution:
+            if random() < prob:
+                appendValue += f"{item}:{randint(5) + 1 }"
+                break
         input_stream.append(appendValue)
     return input_stream
 
@@ -429,7 +425,7 @@ if __name__ == '__main__':
     runMode = input("Enter r to generate random values and u to input user values: ")
     if runMode == "r":
         trackSteps = []
-        userInput = fillRandomInput(100)
+        userInput = fillRandomInput(100, itemDist)
         print(userInput)
         for toRetrieve in userInput:
             size = 50
@@ -499,7 +495,7 @@ if __name__ == '__main__':
         plt.clf()
         plt.plot(trackSteps)
         plt.title('Library')
-        plt.ylabel('Steps')
+        plt.ylabel('Score (Penalty)')
         plt.xlabel('Run')
         plt.savefig('returnsfinalpart.png')
     else:

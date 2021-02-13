@@ -47,10 +47,54 @@ simulated user giving one command to gather a certain amount of materials 100 ti
 based on the amount of items requested and the distribution of the materials. Our agent manages to properly retrieve 
 the items of the request and returns them to the chest, fulfilling our qualitative requirements setup.
 
+As you can see below, depending on what is requested for (see the "Retrieving..." section of the 1st screenshot), 
+it can pick the selections needed and will ultimately distribute it to the result chest (see the second screenshot ).
+This is our first qualitative runtime test, testing that it can properly perform given a single request, issued for a 
+single item over a simple test case.
+
+<img src="static/runtimeScreenShot.png" style="width:1000px;"/>
+<img src="static/runtimeScreenShot2.png" style="width:1000px;"/>
+
+
+In a more complex (and practical) case, we also are able to respond to multiple requests for multiple materials, shown
+in the photo below during collection, and after results are placed in the resulting chest
+
+
 ### Quantitative
-The 
+In terms of quantitative analysis, we did a plot of the runtime performance. How exactly we scored the system was as 
+follows:  
+- Every step has a score of 1  
+To calculate the score we used the following formula to normalize it for all inputs:  
+$$ \sum_x\frac{(score)(P_x)}{(n_x)} $$  
+Where 
+- score = score of steps
+- P_x = probability of given item x to be selected (given to us as the probability distribution)
+- n_x = number of times given item x was requested
+
+The runtime graph is shown below, however, due to the lack of optimizations it seems eratic and spikes every so often 
+without any improvements -- definitely a place for improvement.
+
+<img src="static/bruteForceWithProblems.png" style="width:1000px;"/>
 
 ## Future Plans
 Currently, we have essentially created a very simple case that would (theoretically) be the fastest traversal over all 
-chests. However,
+chests. However, in the future, we plan on implementing two key changes -- first our runtimes will be over a selected
+time frame, and the agent will be allowed to "remember" their past actions. Second, we plan on implementing a new 
+approach -- we have been looking into the Multi-Armed Bandit problem for possible implementation ideas, and other
+exploration vs exploitation possible traversal algorithms that may assist in our algorithm to help with creating 
+improvement.
+
+Below is a graph with a new scoring system, adding penalty for opening chests to encourage more direct findings of 
+better chests to choose from, and subsequently better results.
+
+<img src="static/statusBruteForcePerformance.png" style="width:1000px;"/>
+
 ## Resources
+We used some malmo documentation found in [here for XML](https://microsoft.github.io/malmo/0.21.0/Schemas/MissionHandlers.html) and 
+[for agents](http://microsoft.github.io/malmo/0.30.0/Documentation/annotated.html) 
+
+For the Multi-Armed Bandit problem, see [here](https://towardsdatascience.com/solving-the-multi-armed-bandit-problem-b72de40db97c)
+for an excellent explanation
+
+Also, a great deal of thanks to Professor Singh and his wonderful TA Mr.Nottingham for providing guidance, and all those
+who contributed to Campuswire
