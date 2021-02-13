@@ -58,7 +58,7 @@ single item over a simple test case.
 
 In a more complex (and practical) case, we also are able to respond to multiple requests for multiple materials, shown
 in the photo below during collection, and after results are placed in the resulting chest
-
+<img src="static/runtimeScreenShot3.png" style="width:1000px;"/>
 
 ### Quantitative
 In terms of quantitative analysis, we did a plot of the runtime performance. How exactly we scored the system was as 
@@ -97,4 +97,4 @@ For the Multi-Armed Bandit problem, see [here](https://towardsdatascience.com/so
 for an excellent explanation
 
 Also, a great deal of thanks to Professor Singh and his wonderful TA Mr.Nottingham for providing guidance, and all those
-who contributed to Campuswire
+who contributed to Campus Wire

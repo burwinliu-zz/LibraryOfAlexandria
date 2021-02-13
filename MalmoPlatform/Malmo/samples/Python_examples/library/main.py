@@ -275,7 +275,11 @@ def bruteForceRetrieve(arg_agent, values: dict, size):
 
 # Testing and enviornment
 def setupEnv(env_agent, env_size, env_items):
+    global agent_position
+
+    agent_position = 0
     print("Setting up chests..", end=' ')
+
     # 7 max slots per
     for chest_num in range(env_size):
         num = 0
@@ -509,23 +513,26 @@ if __name__ == '__main__':
         my_clients = MalmoPython.ClientPool()
         my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
 
-        # Loop until mission starts:
-        print("Waiting for the mission to start ", end=' ')
-        world_state = agent_host.getWorldState()
-        while not world_state.has_mission_begun:
-            print(".", end="")
-            time.sleep(0.1)
-            world_state = agent_host.getWorldState()
-            for error in world_state.errors:
-                print("Error:", error.text)
 
-        toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
         # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
         while toRetrieve != "q":
 
-            setupEnv(agent_host, size, itemDist)
+
             agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
+
+            # Loop until mission starts:
+            print("Waiting for the mission to start ", end=' ')
+            world_state = agent_host.getWorldState()
+            while not world_state.has_mission_begun:
+                print(".", end="")
+                time.sleep(0.1)
+                world_state = agent_host.getWorldState()
+                for error in world_state.errors:
+                    print("Error:", error.text)
+            print()
+            setupEnv(agent_host, size, itemDist)
+            toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
             toGet = {}
             total = 0
