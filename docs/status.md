@@ -58,7 +58,7 @@ single item over a simple test case.
 
 
 In a more complex (and practical) case, we also are able to respond to multiple requests for multiple materials, shown
-in the photo below during collection, and after results are placed in the resulting chest
+in the photo below during collection, and after results are placed in the resulting chest  
 <img src="static/runtimeScreenShot3.png" style="width:1000px;"/>
 
 ### Quantitative
