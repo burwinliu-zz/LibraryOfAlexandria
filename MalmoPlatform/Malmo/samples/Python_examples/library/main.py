@@ -232,7 +232,6 @@ def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
                     ordersMet += 1
                     if len(searching[item]) == 1:
                         del searching[item][-1]
-                        break
                     else:
                         searching[item].pop()
     return searching, inventoryNeeds, ordersMet
@@ -513,7 +512,7 @@ if __name__ == '__main__':
         max_retries = 3
         my_clients = MalmoPython.ClientPool()
         my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
-        agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
+
         # Loop until mission starts:
         print("Waiting for the mission to start ", end=' ')
         world_state = agent_host.getWorldState()
@@ -530,6 +529,7 @@ if __name__ == '__main__':
         while toRetrieve != "q":
 
             setupEnv(agent_host, size, itemDist)
+            agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
 
             toGet = {}
             total = 0

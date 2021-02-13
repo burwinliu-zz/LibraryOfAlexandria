@@ -45,10 +45,10 @@ the goal chest at the end of its mission.
 To support our method as well as show clear signs where we can improve the method we ran our test which consisted of a 
 simulated user giving one command to gather a certain amount of materials 100 times and compared this to a normalized 
 based on the amount of items requested and the distribution of the materials. Our agent manages to properly retrieve 
-the items of the request 
+the items of the request and returns them to the chest, fulfilling our qualitative requirements setup.
 
 ### Quantitative
-This data shows that our algorithim doesn't really improve but gives us a good baseline to work off of 
+The 
 
 ## Future Plans
 Currently, we have essentially created a very simple case that would (theoretically) be the fastest traversal over all 
