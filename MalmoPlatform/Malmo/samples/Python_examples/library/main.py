@@ -37,6 +37,7 @@ num_moves = 0
 
 diamond_distribution = 0.2;
 
+
 def GetMissionXML(obs_size):
     leftX = obs_size * 2 + 2
     front = f"<DrawCuboid x1='{leftX}' y1='0' z1='2' x2='-4' y2='10' z2='2' type='bookshelf' />"
@@ -101,6 +102,20 @@ def GetMissionXML(obs_size):
                     </Mission>'''
 
 
+def getObs(arg_agent):
+    toSleep = 0
+    obs = {}
+    while obs == {}:
+        time.sleep(toSleep)
+        toSleep += .2
+        try:
+            cur_state = arg_agent.getWorldState()
+            obs = json.loads(cur_state.observations[-1].text)
+        except IndexError:
+            print("retrying...")
+    return obs
+
+
 def end(arg_agent_host, arg_world_state):
     print("Ending Mission", end=' ')
     while arg_world_state.is_mission_running:
@@ -161,10 +176,9 @@ def closeChest(arg_agent):
         arg_agent.sendCommand("movesouth")
 
 
-def getItemsInChest(agent_host):
+def getItemsInChest(arg_agent):
     items = {}
-    world_state = agent_host.getWorldState()
-    obs = json.loads(world_state.observations[-1].text)
+    obs = getObs(arg_agent)
     chestName = obs["inventoriesAvailable"][-1]['name']
     chestSize = obs["inventoriesAvailable"][-1]['size']
     for i in range(chestSize):
@@ -187,46 +201,40 @@ def printItemsInDict(items):
     print("________________________\n\n")
 
 
-def invAction(agent_host, action, inv_index, chest_index, obs=None):
+def invAction(arg_agent, action, inv_index, chest_index, obs=None):
     if obs is None:
-        obs = json.loads(world_state.observations[-1].text)
+        obs = getObs(arg_agent)
     chestName = obs["inventoriesAvailable"][-1]['name']
     agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
-    print(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
 
 
 def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
-    cur_state = arg_agent.getWorldState()
-    obs = json.loads(cur_state.observations[-1].text)
+    obs = getObs(arg_agent)
     chestName = obs["inventoriesAvailable"][-1]['name']
     chestSize = obs["inventoriesAvailable"][-1]['size']
     for i in range(chestSize):
+
+        obs = getObs(arg_agent)
         if f"container.{chestName}Slot_{i}_item" in obs:
             item = obs[f"container.{chestName}Slot_{i}_item"]
+            itemHad = obs[f"container.{chestName}Slot_{i}_size"]
+
             if item == 'air':
                 continue
-            if item in searching:
-                itemHad = obs[f"container.{chestName}Slot_{i}_size"]
-                while len(inventoryNeeds) != 0 and len(searching[item]) != 0 and \
-                        inventoryNeeds[searching[item][-1]][1] < itemHad:
-                    itemHad -= inventoryNeeds[searching[item][-1]][1]
+            if item in searching and len(searching[item]) != 0:
+                inventoryNeeds[searching[item][-1]][1] -= itemHad
+                time.sleep(.2)
+                print(int(obs[f"InventorySlot_{searching[item][-1]}_size"]))
+                invAction(arg_agent,
+                          "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+                          searching[item][-1], i, obs=obs)
+                if inventoryNeeds[searching[item][-1]][1] == 0:
                     ordersMet += 1
-                    inventoryNeeds[searching[item][-1]][1] = 0
-                    time.sleep(.2)
-                    invAction(arg_agent,
-                              "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
-                              searching[item][-1], i, obs=obs)
                     if len(searching[item]) == 1:
                         del searching[item][-1]
                         break
                     else:
                         searching[item].pop()
-                if len(searching[item]) != 0:
-                    inventoryNeeds[searching[item][-1]][1] -= itemHad
-                    time.sleep(.2)
-                    invAction(arg_agent,
-                              "combine" if int(obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
-                              searching[item][-1], i, obs=obs)
     return searching, inventoryNeeds, ordersMet
 
 
@@ -258,40 +266,31 @@ def bruteForceRetrieve(arg_agent, values: dict, size):
             break
     moveToChest(arg_agent, 0)
     time.sleep(.5)
-    cur_state = arg_agent.getWorldState()
-    obs = json.loads(cur_state.observations[-1].text)
+    obs = getObs(arg_agent)
     openChest(arg_agent)
     time.sleep(.2)
     for i in range(27):
         invAction(arg_agent, "swap", i, i, obs=obs)
         time.sleep(.2)
-    
+    closeChest(arg_agent)
+    time.sleep(.2)
+
 
 # Testing and enviornment
 def setupEnv(env_agent, env_size, env_items):
     print("Setting up chests..", end=' ')
-
-    chests = [{} for _ in range(env_size)]
-    for i, j in env_items.items():
-        for _ in range(j):
-            nChest = int(random() * env_size)
-            if i not in chests[nChest]:
-                chests[nChest][i] = 0
-            chests[nChest][i] += 1
     # 7 max slots per
     for chest_num in range(env_size):
         num = 0
         itemString = ""
-        for item in chests[chest_num].keys():
-            while chests[chest_num][item] > 64 and num < 28:
-                itemString += f"{{Slot:{num}, id:{item},Count:{64}b}},"
-                num += 1
-                chests[chest_num][item] -= 64
-            if chests[chest_num][item] < 64 and num < 28:
-                itemString += f"{{Slot:{num}, id:{item},Count:{chests[chest_num][item]}b}},"
-                num += 1
-            elif chest_num < env_size - 1:
-                chests[chest_num + 1][item] += chests[chest_num][item]
+        for i in range(7):
+            val = random()
+            itemID = 'air'
+            for j in env_items:
+                if val < j[1]:
+                    itemID = j[0]
+                    break
+            itemString += f"{{Slot:{i},id:{itemID},Count:1b}},"
         env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 2} 1 0 minecraft:diamond_block 2 replace")
         env_agent.sendCommand(f"chat /setblock {chest_num * 2 + 2} 2 1 "
                               f"minecraft:chest 2 replace {{Items:[{itemString[:-1]}]}}")
@@ -301,7 +300,7 @@ def setupEnv(env_agent, env_size, env_items):
 
 def testRun2(agent_host):
     size = 6
-    items = {'stone': 64, 'diamond': 64}
+    items = {'stone': .5, 'diamond': .5}
 
     setupEnv(agent_host, size, items)
     time.sleep(1)
@@ -348,7 +347,7 @@ def testRun2(agent_host):
 
 def testRun(agent_host):
     size = 6
-    items = {'stone': 64, 'diamond': 64}
+    items = {'stone': .5, 'diamond': .5}
 
     setupEnv(agent_host, size, items)
     time.sleep(1)
@@ -384,63 +383,57 @@ def testRun(agent_host):
     closeChest(agent_host)
     time.sleep(1)
 
+
 def fillRandomInput(inputs):
     global diamond_distribution
-    
+
     input_stream = [];
     for x in range(inputs):
         appendValue = ""
-        if(randint(101)/100 < diamond_distribution):
+        if randint(101) / 100 < diamond_distribution:
             appendValue += "diamond:{}".format(randint(5) + 1)
         else:
             appendValue += "stone:{}".format(randint(20) + 1)
         input_stream.append(appendValue)
     return input_stream
-    
+
+
 if __name__ == '__main__':
     # Create default Malmo objects:
     agent_host = MalmoPython.AgentHost()
-    
-    size = 1
 
-    # todo adapt to inputted sizes
-    my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
-    my_mission_record = MalmoPython.MissionRecordSpec()
-    my_mission.requestVideo(800, 500)
-    my_mission.setViewpoint(1)
-    # Attempt to start a mission:
-    max_retries = 3
-    my_clients = MalmoPython.ClientPool()
-    my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
-    agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
-    # Loop until mission starts:
-    print("Waiting for the mission to start ", end=' ')
-    world_state = agent_host.getWorldState()
-    while not world_state.has_mission_begun:
-        print(".", end="")
-        time.sleep(0.1)
-        world_state = agent_host.getWorldState()
-        for error in world_state.errors:
-            print("Error:", error.text)
+    size = -1
+    itemDist = []
+    valDist = {}
+    probTotal = 0
+    EPSILON = 0.0001
+    while size == -1 or itemDist == []:
+        try:
+            if size == -1:
+                size = int(input("Pass integer for size of maze: "))
+            toRetrieve = input("Enter probability distribution in format of ([itemID]:[probItem];... ** NOTE "
+                               "PROB MUST SUM TO 1 ** ): ")
+            for item in toRetrieve.split(";"):
+                key, value = item.split(":")
+                probTotal += float(value)
+                itemDist.append((key.strip(), probTotal))
+                valDist[key.strip()] = float(value)
 
-    print()
-    print("Test Missions running..")
-    # Setup env here, and being running test run
+            if abs(probTotal - 1) > EPSILON:
+                raise Exception("Invalid Probability Distribution")
+        except Exception as e:
+            probTotal = 0
+            itemDist = []
+            valDist = {}
+            print(f"Improper pass, error of {e}")
 
-    # testRun2(agent_host)
-
-    print()
-    print("Mission ended\n")
-    trackSteps = [];
     runMode = input("Enter r to generate random values and u to input user values: ")
-    if(runMode == "r"):
-        
+    if runMode == "r":
+        trackSteps = []
         userInput = fillRandomInput(100)
         print(userInput)
         for toRetrieve in userInput:
             size = 50
-
-            # todo adapt to inputted sizes
             my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
             my_mission_record = MalmoPython.MissionRecordSpec()
             my_mission.requestVideo(800, 500)
@@ -449,14 +442,14 @@ if __name__ == '__main__':
             max_retries = 3
             my_clients = MalmoPython.ClientPool()
             my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
-           
+
             for retry in range(max_retries):
                 try:
-                    agent_host.startMission( my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', retry) )
+                    agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', retry))
                     break
                 except RuntimeError as e:
                     if retry == max_retries - 1:
-                        print("Error starting mission", (retry), ":",e)
+                        print("Error starting mission", (retry), ":", e)
                         exit(1)
                     else:
                         time.sleep(2)
@@ -469,12 +462,11 @@ if __name__ == '__main__':
                 world_state = agent_host.getWorldState()
                 for error in world_state.errors:
                     print("Error:", error.text)
-        
-            print()
-            items = {'stone': 256, 'diamond': 64}
 
-            setupEnv(agent_host, size, items)
-    
+            print()
+
+            setupEnv(agent_host, size, itemDist)
+
             toGet = {}
             total = 0
             for item in toRetrieve.split(";"):
@@ -482,33 +474,24 @@ if __name__ == '__main__':
                     key, value = item.split(":")
                     toGet[key.strip()] = int(value)
                     total += int(value)
-    
+
                 except Exception as e:
                     print(f"Invalid input of '{item}', disregarding as {e}")
             # TODO reformat to ensure that it is possible to retrieve items
             print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
-            
+
             # Methods 1, Brute Force
-         
-          
-                
+
             bruteForceRetrieve(agent_host, toGet, size)
             world_state = agent_host.getWorldState()
             for error in world_state.errors:
                 print("Error:", error.text)
             print("Ended")
             end(agent_host, world_state)
-            if(toRetrieve.split(':')[0] == 'stone'):
-                if(int(toRetrieve.split(':')[1]) != 0):
-                    trackSteps.append(num_moves/int(toRetrieve.split(':')[1]) * 0.8)
-                else:
-                    trackSteps.append(0)
-
+            if int(toRetrieve.split(':')[1]) != 0:
+                trackSteps.append(num_moves / int(toRetrieve.split(':')[1]) * valDist[toRetrieve.split(':')[0]])
             else:
-                if(int(toRetrieve.split(':')[1]) != 0):
-                    trackSteps.append(num_moves/int(toRetrieve.split(':')[1]) * 0.2)
-                else:
-                    trackSteps.append(0)
+                trackSteps.append(0)
 
             print(trackSteps)
             num_moves = 0
@@ -521,13 +504,32 @@ if __name__ == '__main__':
         plt.xlabel('Run')
         plt.savefig('returnsfinalpart.png')
     else:
+        # todo adapt to inputted sizes
+        my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
+        my_mission_record = MalmoPython.MissionRecordSpec()
+        my_mission.requestVideo(800, 500)
+        my_mission.setViewpoint(1)
+        # Attempt to start a mission:
+        max_retries = 3
+        my_clients = MalmoPython.ClientPool()
+        my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
+        agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
+        # Loop until mission starts:
+        print("Waiting for the mission to start ", end=' ')
+        world_state = agent_host.getWorldState()
+        while not world_state.has_mission_begun:
+            print(".", end="")
+            time.sleep(0.1)
+            world_state = agent_host.getWorldState()
+            for error in world_state.errors:
+                print("Error:", error.text)
+
         toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
 
         # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
         while toRetrieve != "q":
-            items = {'stone': 1000, 'diamond': 64}
 
-            setupEnv(agent_host, size, items)
+            setupEnv(agent_host, size, itemDist)
 
             toGet = {}
             total = 0
@@ -551,32 +553,3 @@ if __name__ == '__main__':
             print("Ended")
             end(agent_host, world_state)
             toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
-    
-        # while toRetrieve != "q":
-        #     items = {'stone': 256, 'diamond': 64}
-    
-        #     setupEnv(agent_host, size, items)
-    
-        #     toGet = {}
-        #     total = 0
-        #     for item in toRetrieve.split(";"):
-        #         try:
-        #             key, value = item.split(":")
-        #             toGet[key.strip()] = int(value)
-        #             total += int(value)
-    
-        #         except Exception as e:
-        #             print(f"Invalid input of '{item}', disregarding as {e}")
-        #     # TODO reformat to ensure that it is possible to retrieve items
-        #     print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
-    
-        #     # Methods 1, Brute Force
-        #     print(agent_position)
-        #     bruteForceRetrieve(agent_host, toGet, size)
-        #     world_state = agent_host.getWorldState()
-        #     for error in world_state.errors:
-        #         print("Error:", error.text)
-        #     print("Ended")
-        #     end(agent_host, world_state)
-        #     toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
-     

@@ -21,9 +21,10 @@ The applications for this project is as follows:
 With some revision, we believe that our Algorithm will be a sorting and optimization algorithm, that given the probability distribution, we can construct a sorting algorithm to understand the best placement of our items. Furthermore, we will use some form of a greedy algorithm (likely, find the location of the furthest object, run to that position, retrieve items, and continue retrieving all items along the way back) to retrieve our items.
 
 ## Evaluation
-Our main metric would be the time for the agent to store/retrieve items. Assuming the baseline method for users to retrieve items is to manually look through every chest, the user would have to take a good amount of time on average to find the item. We hope to reduce this time to a just few seconds per job, allowing for quick retrival of items within the preset storage space. We will have our bot run many retrieval missions and record the average times to be used for our quantitative evaluation. 
-
 Our qualitative analysis will depend on first completing basic tasks as a sanity check, such as recieving items from chests in linear and strightforward scenarios (ie.one row of chests and very few items to sort). We will check to see if the object retrieved corresponded to what we issued our command for. As our scope evolves we will also add the element of complexity in storage and recall tasks by the agent by providing more varied inputs for our Agent. A moonshot case would be to provide a mixed input, with inputs and outputs streaming in, and have the agent resort the chests on the fly to optimize over all time to retrieve objects when asked to do so. 
+
+Our quantitative metric would be the time for the agent to store/retrieve items. Assuming the baseline method for users to retrieve items is to manually look through every chest, the user would have to take a good amount of time on average to find the item. We hope to reduce this time to a just few seconds per job, allowing for quick retrival of items within the preset storage space. We will have our bot run many retrieval missions and record the average times to be used for our quantitative evaluation. 
+
 
 ## Appointment
 Appointment Date/Time: Friday Jan 22, 2:15pm
