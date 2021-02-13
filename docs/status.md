@@ -26,20 +26,29 @@ as follows:
 Our agent is setup with several pieces of information and a simple action set. In terms of information, the agent has 
 the probability distribution of the items passed, and has the ability to take a few discrete actions -- move left/right,
 open/close chests and pick up certain items. 
-
-Our current approach is to take a greedy approach, where we try and find the least number of moved steps to find the 
-correct number of steps. In essence this becomes a simple traversal over the chests from the starting point to capture 
-the needed items.
-
-
-
  
+Our current approach is using a greedy algorithm to minimize the steps to get the result. Our current algorithm 
+supports a single retrieval step and gathers the correct amount of requested goods from the simulated user requests. 
+By using this algorithm we have set a baseline heuristic in order to complete our retrieval goal. Our agent only has
+knowledge of the chest contents and it's own inventory contents. Based on these two observations and the simulated 
+users goal value the agent searches through the chests to find the correct amount of materials in the chest. As the
+agent moves through the chests it takes the required amount of materials that the goal user asked for until it has 
+reached the goal value. This approach currently doesn't support swapping items in chests to make future runs faster 
+which is one of the things planned for the future. The current setup and heuristic only being the user simulated goal 
+is also something we need to work on and we will be adding more heuristics in order to improve the search capability. 
+The current actions are agent can do is open and close chests take items in and out of the chests and place them into 
+the goal chest at the end of its mission. 
 
 ## Evaluation
 
 Qualitative
 
 Quantitative
+
+To support our method as well as show clear signs where we can improve the method we ran our test which consisted of a simulated user giving one command to gather a certain amount of materials 100 times and compared this to a normalized based on the amount of items requested and the distribution of the materials. 
+
+
+This data shows that our algorithim doesn't really improve but gives us a good baseline to work off of 
 
 ## Future Plans
 Currently, we have essentially created a very simple case that would (theoretically) be the fastest traversal over all 
