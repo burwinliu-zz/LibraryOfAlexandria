@@ -103,7 +103,7 @@ def GetMissionXML(obs_size):
 
 
 def getObs(arg_agent):
-    toSleep = 0
+    toSleep = .1
     obs = {}
     while obs == {}:
         time.sleep(toSleep)
