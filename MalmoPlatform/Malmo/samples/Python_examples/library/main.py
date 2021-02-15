@@ -426,13 +426,84 @@ if __name__ == '__main__':
             valDist = {}
             print(f"Improper pass, error of {e}")
 
-    runMode = input("Enter r to generate random values and u to input user values: ")
-    if runMode == "r":
-        trackSteps = []
-        userInput = fillRandomInput(100, itemDist)
-        print(userInput)
-        for toRetrieve in userInput:
-            size = 50
+    runMode = ""
+    while runMode != 'q':
+        input("Enter (r)andom values or (u)ser values or (t)rain or (q)uit: ")
+        if runMode == "r":
+            trackSteps = []
+            userInput = fillRandomInput(100, itemDist)
+            print(userInput)
+            for toRetrieve in userInput:
+                my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
+                my_mission_record = MalmoPython.MissionRecordSpec()
+                my_mission.requestVideo(800, 500)
+                my_mission.setViewpoint(1)
+                # Attempt to start a mission:
+                max_retries = 3
+                my_clients = MalmoPython.ClientPool()
+                my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
+
+                for retry in range(max_retries):
+                    try:
+                        agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', retry))
+                        break
+                    except RuntimeError as e:
+                        if retry == max_retries - 1:
+                            print("Error starting mission", (retry), ":", e)
+                            exit(1)
+                        else:
+                            time.sleep(2)
+                # Loop until mission starts:
+                print("Waiting for the mission to start ", end=' ')
+                world_state = agent_host.getWorldState()
+                while not world_state.has_mission_begun:
+                    print(".", end="")
+                    time.sleep(0.1)
+                    world_state = agent_host.getWorldState()
+                    for error in world_state.errors:
+                        print("Error:", error.text)
+
+                print()
+
+                setupEnv(agent_host, size, itemDist)
+
+                toGet = {}
+                total = 0
+                for item in toRetrieve.split(";"):
+                    try:
+                        key, value = item.split(":")
+                        toGet[key.strip()] = int(value)
+                        total += int(value)
+
+                    except Exception as e:
+                        print(f"Invalid input of '{item}', disregarding as {e}")
+                print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+
+                # Methods 1, Brute Force
+
+                bruteForceRetrieve(agent_host, toGet, size)
+                world_state = agent_host.getWorldState()
+                for error in world_state.errors:
+                    print("Error:", error.text)
+                print("Ended")
+                end(agent_host, world_state)
+                if int(toRetrieve.split(':')[1]) != 0:
+                    trackSteps.append(num_moves / int(toRetrieve.split(':')[1]) * valDist[toRetrieve.split(':')[0]])
+                else:
+                    trackSteps.append(0)
+
+                print(trackSteps)
+                num_moves = 0
+                agent_position = 0
+
+            plt.clf()
+            plt.plot(trackSteps)
+            plt.title('Library')
+            plt.ylabel('Score (Penalty)')
+            plt.xlabel('Run')
+            plt.savefig('returnsfinalpart.png')
+        elif runMode == 'q':
+            # todo adapt to inputted sizes
             my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
             my_mission_record = MalmoPython.MissionRecordSpec()
             my_mission.requestVideo(800, 500)
@@ -442,117 +513,92 @@ if __name__ == '__main__':
             my_clients = MalmoPython.ClientPool()
             my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
 
-            for retry in range(max_retries):
-                try:
-                    agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', retry))
-                    break
-                except RuntimeError as e:
-                    if retry == max_retries - 1:
-                        print("Error starting mission", (retry), ":", e)
-                        exit(1)
-                    else:
-                        time.sleep(2)
-            # Loop until mission starts:
-            print("Waiting for the mission to start ", end=' ')
-            world_state = agent_host.getWorldState()
-            while not world_state.has_mission_begun:
-                print(".", end="")
-                time.sleep(0.1)
+
+
+            # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
+            while toRetrieve != "q":
+
+
+                agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
+
+                # Loop until mission starts:
+                print("Waiting for the mission to start ", end=' ')
+                world_state = agent_host.getWorldState()
+                while not world_state.has_mission_begun:
+                    print(".", end="")
+                    time.sleep(0.1)
+                    world_state = agent_host.getWorldState()
+                    for error in world_state.errors:
+                        print("Error:", error.text)
+                print()
+                setupEnv(agent_host, size, itemDist)
+                toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+
+                toGet = {}
+                total = 0
+                for item in toRetrieve.split(";"):
+                    try:
+                        key, value = item.split(":")
+                        toGet[key.strip()] = int(value)
+                        total += int(value)
+
+                    except Exception as e:
+                        print(f"Invalid input of '{item}', disregarding as {e}")
+                # TODO reformat to ensure that it is possible to retrieve items
+                print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+
+                # Methods 1, Brute Force
+                print(agent_position)
+                bruteForceRetrieve(agent_host, toGet, size)
                 world_state = agent_host.getWorldState()
                 for error in world_state.errors:
                     print("Error:", error.text)
-
-            print()
-
-            setupEnv(agent_host, size, itemDist)
-
-            toGet = {}
-            total = 0
-            for item in toRetrieve.split(";"):
+                print("Ended")
+                end(agent_host, world_state)
+                toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+        elif runMode == 't':
+            while True:
+                period = input("How many runs per memorized cycle? (default to 20)")
                 try:
-                    key, value = item.split(":")
-                    toGet[key.strip()] = int(value)
-                    total += int(value)
+                    period = int(period)
+                except ValueError:
+                    period = 20
+                my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
+                my_mission_record = MalmoPython.MissionRecordSpec()
+                my_mission.requestVideo(800, 500)
+                my_mission.setViewpoint(1)
+                # Attempt to start a mission:
+                max_retries = 3
+                my_clients = MalmoPython.ClientPool()
+                my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
 
-                except Exception as e:
-                    print(f"Invalid input of '{item}', disregarding as {e}")
-            # TODO reformat to ensure that it is possible to retrieve items
-            print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
-
-            # Methods 1, Brute Force
-
-            bruteForceRetrieve(agent_host, toGet, size)
-            world_state = agent_host.getWorldState()
-            for error in world_state.errors:
-                print("Error:", error.text)
-            print("Ended")
-            end(agent_host, world_state)
-            if int(toRetrieve.split(':')[1]) != 0:
-                trackSteps.append(num_moves / int(toRetrieve.split(':')[1]) * valDist[toRetrieve.split(':')[0]])
-            else:
-                trackSteps.append(0)
-
-            print(trackSteps)
-            num_moves = 0
-            agent_position = 0
-
-        plt.clf()
-        plt.plot(trackSteps)
-        plt.title('Library')
-        plt.ylabel('Score (Penalty)')
-        plt.xlabel('Run')
-        plt.savefig('returnsfinalpart.png')
-    else:
-        # todo adapt to inputted sizes
-        my_mission = MalmoPython.MissionSpec(GetMissionXML(size), True)
-        my_mission_record = MalmoPython.MissionRecordSpec()
-        my_mission.requestVideo(800, 500)
-        my_mission.setViewpoint(1)
-        # Attempt to start a mission:
-        max_retries = 3
-        my_clients = MalmoPython.ClientPool()
-        my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
-
-
-
-        # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
-        while toRetrieve != "q":
-
-
-            agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
-
-            # Loop until mission starts:
-            print("Waiting for the mission to start ", end=' ')
-            world_state = agent_host.getWorldState()
-            while not world_state.has_mission_begun:
-                print(".", end="")
-                time.sleep(0.1)
+                for retry in range(max_retries):
+                    try:
+                        agent_host.startMission(my_mission, my_clients, my_mission_record, 0,
+                                                "%s-%d" % ('Moshe', retry))
+                        break
+                    except RuntimeError as e:
+                        if retry == max_retries - 1:
+                            print("Error starting mission", (retry), ":", e)
+                            exit(1)
+                        else:
+                            time.sleep(2)
+                # Loop until mission starts:
+                print("Waiting for the mission to start ", end=' ')
                 world_state = agent_host.getWorldState()
-                for error in world_state.errors:
-                    print("Error:", error.text)
-            print()
-            setupEnv(agent_host, size, itemDist)
-            toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+                while not world_state.has_mission_begun:
+                    print(".", end="")
+                    time.sleep(0.1)
+                    world_state = agent_host.getWorldState()
+                    for error in world_state.errors:
+                        print("Error:", error.text)
 
-            toGet = {}
-            total = 0
-            for item in toRetrieve.split(";"):
-                try:
-                    key, value = item.split(":")
-                    toGet[key.strip()] = int(value)
-                    total += int(value)
+                print()
 
-                except Exception as e:
-                    print(f"Invalid input of '{item}', disregarding as {e}")
-            # TODO reformat to ensure that it is possible to retrieve items
-            print(f" ---- Retrieving {toGet} into Ender Chest ---- ")
+                setupEnv(agent_host, size, itemDist)
 
-            # Methods 1, Brute Force
-            print(agent_position)
-            bruteForceRetrieve(agent_host, toGet, size)
-            world_state = agent_host.getWorldState()
-            for error in world_state.errors:
-                print("Error:", error.text)
-            print("Ended")
-            end(agent_host, world_state)
-            toRetrieve = input("Enter values to retrieve in format of ([itemToRetrieve]:[numItems];...): ")
+                userInput = fillRandomInput(period, itemDist)
+                for _ in range(20):
+                    # todo, train and readjust as time goes along for performance (found via score global)
+                    continue
+
