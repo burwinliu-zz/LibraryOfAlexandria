@@ -26,3 +26,16 @@ Problem -- fastest way to retrieve objects
 Environment 
 
 Probability Distribution -- uniform distribution 
+
+
+input: [ presumed values for chests (w/-1 for unknowns?) ], position (maybe global/class object), desired items (passed as params)
+
+use presumed values and position to calculate costs for each position, create estimate based on "removed items" and known distribution, and calculate cost/reward to explore, train the agent based on these principles,
+
+1) Can we vary the env? Removing the items as we go along and then 
+
+
+Distribute according to some distribution per chest
+
+	Keep env constant, and 
+	RLib -> Obs space, to model, action space, -> (iterative learning) Inventory + looking for + what you are at
