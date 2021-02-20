@@ -301,17 +301,7 @@ def setupEnv(env_agent, env_size, env_items):
     print("done")
 
 
-def _constructDistBasedEnv(env_size, env_items):
-    # Per episode, can reconstruct this environment
-    global agent_position
 
-    agent_position = 0
-    chestDist = []
-    # Construct distribution
-    for chest_num in range(env_size):
-        num = 0
-        chestDist.append(sorted(numpy.random.random((len(env_items),))))
-    return chestDist
 
 
 def testRun2(agent_host):
@@ -406,7 +396,7 @@ def fillRandomInput(inputs, distribution):
         appendValue = ""
         for item, prob in distribution:
             if random() < prob:
-                appendValue += f"{item}:{randint(5) + 1 }"
+                appendValue += f"{item}:{randint(5) + 1}"
                 break
         input_stream.append(appendValue)
     return input_stream
@@ -527,11 +517,8 @@ def bruteForce():
         my_clients = MalmoPython.ClientPool()
         my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
 
-
-
         # MonteCarlo == METHOD Multi Armed Bandit is general problem -- dig through this.
         while toRetrieve != "q":
-
 
             agent_host.startMission(my_mission, my_clients, my_mission_record, 0, "%s-%d" % ('Moshe', 0))
 
@@ -616,6 +603,7 @@ def bruteForce():
                 # todo, train and readjust as time goes along for performance (found via score global)
                 continue
 
+
 def learning():
     # Create default Malmo objects:
     # Distribution the requests are over
@@ -633,7 +621,6 @@ def learning():
             print("Try again, with proper inputs")
 
 
-
 if __name__ == '__main__':
 
     run_mode = input("Select run mode (b)rute force, (l)earning, or (q)uit")
@@ -642,7 +629,3 @@ if __name__ == '__main__':
         bruteForce()
     elif run_mode == 'l':
         learning()
-
-
-
-
