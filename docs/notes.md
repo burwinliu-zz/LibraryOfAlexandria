@@ -39,3 +39,12 @@ Distribute according to some distribution per chest
 
 	Keep env constant, and 
 	RLib -> Obs space, to model, action space, -> (iterative learning) Inventory + looking for + what you are at
+	
+	
+ML + Input -> retrieval inits -> place the block
+Lower Missions 
+Keep distribution per episode
+
+RLib
+
+Minimize time spent -> PQ 

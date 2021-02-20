@@ -205,7 +205,7 @@ def invAction(arg_agent, action, inv_index, chest_index, obs=None):
     if obs is None:
         obs = getObs(arg_agent)
     chestName = obs["inventoriesAvailable"][-1]['name']
-    agent_host.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+    arg_agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
 
 
 def getItems(arg_agent, searching, inventoryNeeds, ordersMet):
@@ -618,6 +618,7 @@ def bruteForce():
 
 def learning():
     # Create default Malmo objects:
+    # Distribution the requests are over
     agent_host = MalmoPython.AgentHost()
 
     size = -1
