@@ -160,9 +160,9 @@ class Librarian(gym.Env):
 
         return items
 
-    def invAction(self, action, inv_index, chest_index, obs=None):
+    def invAction(self, action, inv_index, chest_index):
         self._updateObs()
-        chestName = obs["inventoriesAvailable"][-1]['name']
+        chestName = self.obs["inventoriesAvailable"][-1]['name']
         self.agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
 
     def getItems(self, searching, inventoryNeeds, ordersMet):
@@ -171,7 +171,7 @@ class Librarian(gym.Env):
         chestSize = self.obs["inventoriesAvailable"][-1]['size']
         for i in range(chestSize):
 
-            if f"container.{chestName}Slot_{i}_item" in obs:
+            if f"container.{chestName}Slot_{i}_item" in self.obs:
                 item = self.obs[f"container.{chestName}Slot_{i}_item"]
                 itemHad = self.obs[f"container.{chestName}Slot_{i}_size"]
 
@@ -182,7 +182,7 @@ class Librarian(gym.Env):
                     time.sleep(.2)
                     self.invAction(
                         "combine" if int(self.obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
-                        searching[item][-1], i, obs=self.obs)
+                        searching[item][-1], i)
                     if inventoryNeeds[searching[item][-1]][1] == 0:
                         ordersMet += 1
                         if len(searching[item]) == 1:
