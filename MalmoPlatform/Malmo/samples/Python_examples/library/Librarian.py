@@ -1,5 +1,6 @@
 import json
 import time
+from queue import PriorityQueue as PQ
 
 import numpy
 import gym
@@ -10,6 +11,7 @@ except ImportError:
     import MalmoPython
 
 
+# todo, provide interface for retrieve, store of items, so there is less issue of potential bad updates
 class Librarian(gym.Env):
     def __init__(self, env_config):
         self.agent = MalmoPython.AgentHost()
@@ -20,14 +22,47 @@ class Librarian(gym.Env):
         self._env_items = env_config['items']
         self._input_dist = sorted(numpy.random.random((len(self._env_items),)))
 
-        # Contents of chests key = item; value = priorityQueue of items, sorted by position
+        # Location of items {key = item; value = list of positions}
         self._itemPos = {}
+        # Contents of chests -- list of dicts [{key = item, value = [list of positions where they may be found]}]
+        self._chestContents = []
 
         self._episode_score = 0
         self.agent_position = 0
 
-    def _optimal_retrieve(self):
-        pass
+    def _optimal_retrieve(self, input: dict):
+        """
+            input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
+
+            Assumed that the self._itemPos is porperly updated and kept done well
+        """
+        action_plan = []
+        for item_id, num_retrieve in input.values():
+            if item_id in self._itemPos:
+                # Therefore can retrieve, else you dun messed up
+                pq_items = sorted([i for i in self._itemPos[item_id]], reverse=True)
+
+                # Now we pop until we find
+                while num_retrieve > 0:
+                    toConsider = pq_items.pop()
+                    chest = self._chestContents[toConsider]
+                    if num_retrieve <= len(chest[item_id]):
+                        toRetrieve = num_retrieve
+                    else:
+                        toRetrieve = len(chest[item_id])
+                    action_plan.append((toConsider, item_id, toRetrieve))
+                    num_retrieve -= toRetrieve
+
+        # TODO merge actions at one chest if they arise
+        action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
+
+        for position, item, num_retrieve in action_plan:
+            # Should be in order from closest to furthest and retreiving the items so we should be able to execute from here
+
+            self.moveToChest(position)
+            self.openChest()
+            self.getItems({item: num_retrieve})
+            self.closeChest()
 
     def GetMissionXML(self, obs_size):
         leftX = obs_size * 2 + 2
@@ -131,6 +166,11 @@ class Librarian(gym.Env):
         for _ in range(10):
             self.agent.sendCommand("movesouth")
 
+    def _invAction(self, action, inv_index, chest_index):
+        self._updateObs()
+        chestName = self.obs["inventoriesAvailable"][-1]['name']
+        self.agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
+
     # Complex Move actions
     def moveToChest(self, chest_num):
 
@@ -144,54 +184,38 @@ class Librarian(gym.Env):
             self.moveRight(2 * abs(self.agent_position - chest_num))
         self.agent_position = chest_num
 
-    def getItemsInChest(self):
-        items = {}
+    def getItems(self, query):
+        """
+            query = dict{ key = itemId: value = number to retrieve }
+        """
+        # TODO Fix this to fit with the Librarian Class
         self._updateObs()
         chestName = self.obs["inventoriesAvailable"][-1]['name']
         chestSize = self.obs["inventoriesAvailable"][-1]['size']
-        for i in range(chestSize):
-            if f"container.{chestName}Slot_{i}_item" in self.obs:
-                item = self.obs[f"container.{chestName}Slot_{i}_item"]
-                if item == 'air':
-                    continue
-                if item not in items:
-                    items[item] = 0
-                items[item] += self.obs[f"container.{chestName}Slot_{i}_size"]
-
-        return items
-
-    def invAction(self, action, inv_index, chest_index):
-        self._updateObs()
-        chestName = self.obs["inventoriesAvailable"][-1]['name']
-        self.agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
-
-    def getItems(self, searching, inventoryNeeds, ordersMet):
-        self._updateObs()
-        chestName = self.obs["inventoriesAvailable"][-1]['name']
-        chestSize = self.obs["inventoriesAvailable"][-1]['size']
-        for i in range(chestSize):
-
-            if f"container.{chestName}Slot_{i}_item" in self.obs:
-                item = self.obs[f"container.{chestName}Slot_{i}_item"]
-                itemHad = self.obs[f"container.{chestName}Slot_{i}_size"]
-
-                if item == 'air':
-                    continue
-                if item in searching and len(searching[item]) != 0:
-                    inventoryNeeds[searching[item][-1]][1] -= itemHad
-                    time.sleep(.2)
-                    self.invAction(
-                        "combine" if int(self.obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
-                        searching[item][-1], i)
-                    if inventoryNeeds[searching[item][-1]][1] == 0:
-                        ordersMet += 1
-                        if len(searching[item]) == 1:
-                            del searching[item][-1]
-                        else:
-                            searching[item].pop()
-            self._updateObs()
-
-        return searching, inventoryNeeds, ordersMet
+        # for i in range(chestSize):
+        #
+        #     if f"container.{chestName}Slot_{i}_item" in self.obs:
+        #         item = self.obs[f"container.{chestName}Slot_{i}_item"]
+        #         itemHad = self.obs[f"container.{chestName}Slot_{i}_size"]
+        #
+        #         if item == 'air':
+        #             continue
+        #         if item in searching and len(searching[item]) != 0:
+        #             inventoryNeeds[searching[item][-1]][1] -= itemHad
+        #             time.sleep(.2)
+        #             # TODO update the chest_contents and itempos attributes
+        #             self._invAction(
+        #                 "combine" if int(self.obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
+        #                 searching[item][-1], i)
+        #             if inventoryNeeds[searching[item][-1]][1] == 0:
+        #                 ordersMet += 1
+        #                 if len(searching[item]) == 1:
+        #                     del searching[item][-1]
+        #                 else:
+        #                     searching[item].pop()
+        #     self._updateObs()
+        #
+        # return searching, inventoryNeeds, ordersMet
 
     def end(self):
         print("Ending Mission", end=' ')
