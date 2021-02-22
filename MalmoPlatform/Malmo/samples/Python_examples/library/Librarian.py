@@ -1,6 +1,5 @@
 import json
 import time
-from queue import PriorityQueue as PQ
 
 import numpy
 import gym
@@ -26,6 +25,9 @@ class Librarian(gym.Env):
         self._itemPos = {}
         # Contents of chests -- list of dicts [{key = item, value = [list of positions where they may be found]}]
         self._chestContents = []
+        # Inventory positions
+        self._inventory = {}
+        self._nextOpen = 0
 
         self._episode_score = 0
         self.agent_position = 0
@@ -189,33 +191,26 @@ class Librarian(gym.Env):
             query = dict{ key = itemId: value = number to retrieve }
         """
         # TODO Fix this to fit with the Librarian Class
-        self._updateObs()
-        chestName = self.obs["inventoriesAvailable"][-1]['name']
-        chestSize = self.obs["inventoriesAvailable"][-1]['size']
-        # for i in range(chestSize):
-        #
-        #     if f"container.{chestName}Slot_{i}_item" in self.obs:
-        #         item = self.obs[f"container.{chestName}Slot_{i}_item"]
-        #         itemHad = self.obs[f"container.{chestName}Slot_{i}_size"]
-        #
-        #         if item == 'air':
-        #             continue
-        #         if item in searching and len(searching[item]) != 0:
-        #             inventoryNeeds[searching[item][-1]][1] -= itemHad
-        #             time.sleep(.2)
-        #             # TODO update the chest_contents and itempos attributes
-        #             self._invAction(
-        #                 "combine" if int(self.obs[f"InventorySlot_{searching[item][-1]}_size"]) != 0 else "swap",
-        #                 searching[item][-1], i)
-        #             if inventoryNeeds[searching[item][-1]][1] == 0:
-        #                 ordersMet += 1
-        #                 if len(searching[item]) == 1:
-        #                     del searching[item][-1]
-        #                 else:
-        #                     searching[item].pop()
-        #     self._updateObs()
-        #
-        # return searching, inventoryNeeds, ordersMet
+        chest = self._chestContents[self.agent_position]
+        for itemId, toRetrieve in query:
+            for i in range(toRetrieve):
+                try:
+                    posToGet = chest[itemId].pop()
+                except IndexError:
+                    print("Bad retrieval, should not have happened, somewhere we did not update properly")
+                    break
+                if itemId in self._inventory:
+                    self._invAction("combine", self._inventory[itemId], posToGet)
+                else:
+                    # Create a new slot for this new item, and deposit there
+                    self._inventory[itemId] = self._nextOpen
+                    self._nextOpen += 1
+                    self._invAction("swap", self._inventory[itemId], posToGet)
+                time.sleep(.2)
+            # update if we have retrieved all said items within the chest
+            if len(chest[itemId]) == 0:
+                del self._chestContents[self.agent_position][itemId]
+                self._itemPos[itemId].remove(self.agent_position)
 
     def end(self):
         print("Ending Mission", end=' ')
