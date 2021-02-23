@@ -35,7 +35,6 @@ class Librarian(gym.Env):
     def _optimal_retrieve(self, input: dict):
         """
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
-
             Assumed that the self._itemPos is porperly updated and kept done well
         """
         action_plan = []
