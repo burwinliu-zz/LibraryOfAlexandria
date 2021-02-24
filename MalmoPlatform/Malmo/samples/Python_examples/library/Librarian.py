@@ -34,7 +34,7 @@ class Librarian(gym.Env):
         # maximum items per chest to enqable
         self.max_items_per_chest = env_config['max_per_chest']
 
-        # Contents of chests key = item; value = priorityQueue of items, sorted by position
+        # Contents of chests key = item; value = set of items positions
         self._itemPos = {}
 
         self._chestContents = []
@@ -67,10 +67,12 @@ class Librarian(gym.Env):
         for item_id, num_retrieve in input.items():
             if len(self._itemPos[item_id]) > 0:
                 # Therefore can retrieve, else you dun messed up
-                pq_items = sorted([i for i in self._itemPos[item_id]], reverse=True)
+                pq_items = sorted([i for i in self._itemPos[item_id]])
                 print(self._itemPos)
                 print(self._chestContents)
                 print(pq_items)
+                print(num_retrieve)
+                print(item_id)
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
@@ -86,9 +88,9 @@ class Librarian(gym.Env):
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
 
         for position, item, num_retrieve in action_plan:
-            # Should be in order from closest to furthest and retreiving the items so we should be able to execute from here
-
-            self.moveToChest(position)
+            # Should be in order from closest to furthest and retreiving the items so we should be able to execute
+            #   from here
+            self.moveToChest(position+1)
             self.openChest()
             self.getItems({item: num_retrieve})
             self.closeChest()
@@ -106,7 +108,6 @@ class Librarian(gym.Env):
             done: <bool> indicates terminal state
             info: <dict> dictionary of extra information
         """
-
         # item to be placed
         print(self.inv_number)
         print(self.item)
@@ -121,7 +122,7 @@ class Librarian(gym.Env):
                 print(self.obs[self.agent_position][i])
                 self.invAction("swap", self.inv_number, i)
                 self.obs[self.agent_position][i][self.item] = 1
-                self._itemPos[self.rMap[self.item]].append(self.agent_position - 1)
+                self._itemPos[self.rMap[self.item]].add(self.agent_position-1)
                 self._chestContents[self.agent_position - 1][self.rMap[self.item]].append(i)
                 # clear since item has been placed
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
@@ -146,11 +147,9 @@ class Librarian(gym.Env):
                 self.moveToChest(0)
                 self._optimal_retrieve({'stone': 2})
         print(self.obs)
-        if done == True:
+        if done:
             # end malmo mission
-            self.moveToChest(0)
-            self.moveRight(2)
-            time.sleep(2)
+            self.moveToChest(-1)
         world_state = self.agent.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
@@ -250,27 +249,29 @@ class Librarian(gym.Env):
         self._episode_score += steps
         for i in range(steps):
             self.agent.sendCommand("moveeast")
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def moveRight(self, steps):
         self._episode_score += steps
         for i in range(steps):
             self.agent.sendCommand("movewest")
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def openChest(self):
         self._episode_score += 1
         self.agent.sendCommand("use 1")
-        time.sleep(0.1)
+        time.sleep(0.2)
         self.agent.sendCommand("use 0")
+        time.sleep(0.2)
 
     def closeChest(self):
         self._episode_score += 1
         for _ in range(10):
             self.agent.sendCommand("movenorth")
-        time.sleep(0.1)
+        time.sleep(0.2)
         for _ in range(10):
             self.agent.sendCommand("movesouth")
+        time.sleep(0.2)
 
     # Complex Move actions
     def moveToChest(self, chest_num):
@@ -284,22 +285,7 @@ class Librarian(gym.Env):
         else:
             self.moveRight(2 * abs(self.agent_position - chest_num))
         self.agent_position = chest_num
-
-    def getItemsInChest(self):
-        items = {}
-        self._updateObs()
-        chestName = self.world_obs["inventoriesAvailable"][-1]['name']
-        chestSize = self.world_obs["inventoriesAvailable"][-1]['size']
-        for i in range(chestSize):
-            if f"container.{chestName}Slot_{i}_item" in self.obs:
-                item = self.world_obs[f"container.{chestName}Slot_{i}_item"]
-                if item == 'air':
-                    continue
-                if item not in items:
-                    items[item] = 0
-                items[item] += self.world_obs[f"container.{chestName}Slot_{i}_size"]
-
-        return items
+        time.sleep(.1)
 
     def invAction(self, action, inv_index, chest_index):
         self._updateObs()
@@ -314,7 +300,7 @@ class Librarian(gym.Env):
             query = dict{ key = itemId: value = number to retrieve }
         """
         # TODO Fix this to fit with the Librarian Class
-        chest = self._chestContents[self.agent_position]
+        chest = self._chestContents[self.agent_position-1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
                 try:
@@ -322,18 +308,18 @@ class Librarian(gym.Env):
                 except IndexError:
                     print("Bad retrieval, should not have happened, somewhere we did not update properly")
                     break
-                if itemId in self._inventory:
-                    self.invAction("combine", self._inventory[itemId], posToGet)
-                else:
-                    # Create a new slot for this new item, and deposit there
-                    self._inventory[itemId] = self._nextOpen
-                    self._nextOpen += 1
-                    self.invAction("swap", self._inventory[itemId], posToGet)
-                time.sleep(.2)
+                # Create a new slot for this new item, and deposit there
+                if itemId not in self._inventory:
+                    self._inventory[itemId] = set()
+                self._inventory[itemId].add(self._nextOpen)
+                self.invAction("swap", self._nextOpen, posToGet)
+                self._nextOpen += 1
+
+                time.sleep(.1)
             # update if we have retrieved all said items within the chest
             if len(chest[itemId]) == 0:
-                del self._chestContents[self.agent_position][itemId]
-                self._itemPos[itemId].remove(self.agent_position)
+                del self._chestContents[self.agent_position-1][itemId]
+                self._itemPos[itemId].remove(self.agent_position-1)
         return
 
     def reset(self):
@@ -363,7 +349,7 @@ class Librarian(gym.Env):
                     break
         self._itemPos = {}
         for items in self.map:
-            self._itemPos[items] = []
+            self._itemPos[items] = set()
         self._chestContents = []
         for chests in range(self.obs_size):
             self._chestContents.append({})
@@ -415,17 +401,6 @@ class Librarian(gym.Env):
                 print("\nError:", error.text)
 
         return world_state
-
-        def end(self):
-            print("Ending Mission", end=' ')
-            while self.world_obs.is_mission_running:
-                print(".", end="")
-                self.moveToChest(self.agent, -1)
-                time.sleep(0.1)
-                arg_world_state = self.agent.getWorldState()
-                for end_error in self.world_obs.errors:
-                    print("Error:", end_error.text)
-            print()
 
 
 if __name__ == '__main__':
