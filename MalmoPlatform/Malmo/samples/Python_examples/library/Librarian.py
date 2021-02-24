@@ -38,6 +38,8 @@ class Librarian(gym.Env):
         self._itemPos = {}
 
         self._chestContents = []
+        # Ideas: record next open slot per chest
+        self._chestPosition = []
         self._inventory = {}
         self._nextOpen = 0
 
@@ -57,11 +59,17 @@ class Librarian(gym.Env):
         self.observation_space = Box(0, 1,
                                      shape=((self.obs_size + 1) * self.max_items_per_chest * len(self._env_items),),
                                      dtype=numpy.float32)
+        # For quick training
+        self._display = False
+
+        #  todo code class for requester
+        # nondeterm situation occuring when get reward at times
+        self._requester = env_config['requester']
 
     def _optimal_retrieve(self, input: dict):
         """
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
-            Assumed that the self._itemPos is porperly updated and kept done well
+            Assumed that the self._itemPos is properly updated and kept done well
         """
         action_plan = []
         for item_id, num_retrieve in input.items():
@@ -76,6 +84,7 @@ class Librarian(gym.Env):
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
+                    # TODO Failure may occur on a chest, simulate here
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
                         toRetrieve = num_retrieve
@@ -84,16 +93,17 @@ class Librarian(gym.Env):
                     action_plan.append((toConsider, item_id, toRetrieve))
                     num_retrieve -= toRetrieve
 
-        # TODO merge actions at one chest if they arise
+
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
 
         for position, item, num_retrieve in action_plan:
             # Should be in order from closest to furthest and retreiving the items so we should be able to execute
             #   from here
-            self.moveToChest(position+1)
-            self.openChest()
-            self.getItems({item: num_retrieve})
-            self.closeChest()
+            if self._display:
+                self.moveToChest(position+1)
+                self.openChest()
+                self.getItems({item: num_retrieve})
+                self.closeChest()
 
     def step(self, action):
         """
@@ -156,6 +166,12 @@ class Librarian(gym.Env):
         done = not world_state.is_mission_running
         print(done)
         self._episode_score += reward
+        # Reward is how agent learns, + good, - bad
+        # Class agent
+        #   Param: maxRequest
+        #   getRequest()
+        #   getReward(steps, actualResponse, actualRequest)
+        # { randoM) < .4  stone, < .8, diamond, < 1, fence }
         return self.obs.flatten(), reward, done, dict()
 
     def GetMissionXML(self):
@@ -336,7 +352,7 @@ class Librarian(gym.Env):
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
         print(self.returns)
-        if (self.episode_number % 10 == 0):
+        if self.episode_number % 10 == 0:
             self.log()
         self._episode_score = 0
         self.agent_position = 0
