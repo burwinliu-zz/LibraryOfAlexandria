@@ -19,9 +19,10 @@ class Requester:
         # Sorted array of items, tuples, 2 items (item_id, probability)
         self.probDist = []
         if complexity_level == 0:
-            self.probDist = [(self._items[random.randint(0, len(available_input))], 1)]
-            self.passedReward = {i: lambda x: x * 10 for i in self._items}
-            self.failedReward = {i: lambda x: x * -10 for i in self._items}
+            self.probDist = [(self._items[random.randint(0, len(available_input)-1)], 1)]
+            self.passedReward = {i: lambda x: 0 for i in self._items}
+            self.failedReward = {i: lambda x: x * -100 for i in self._items}
+            self.stepWeights = lambda x: x*-1
 
         # Random numbers, probability get_request, get_reward
 
@@ -30,7 +31,8 @@ class Requester:
         # law large numbers [ average ]
         # Get stone only
         # Get only diamonds
-        #
+        #   .4 -> .8 [ requests -> average ]  RESETS at every episode -> main issue would be that the agents
+        # reward is not well defined here? so this would be increasingly hard to do.
         request = {}
         for i in range(self.max_req):
             randomized = random.random()
@@ -46,9 +48,10 @@ class Requester:
     def get_reward(self, request, response, steps):
         # TODO add stochastic here for rewards
         reward = 0
-        for i, j in response:
+        print(f"REWARD REQUESTED FROM {request} {response} {steps}")
+        for i, j in response.items():
             reward += self.passedReward[i](j)
             request[i] -= j
-        for i, j in request:
+        for i, j in request.items():
             reward += self.failedReward[i](j)
-        return reward-steps
+        return reward + self.stepWeights(steps)
