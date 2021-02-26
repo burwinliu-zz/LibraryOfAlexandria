@@ -74,6 +74,7 @@ class Librarian(gym.Env):
             Assumed that the self._itemPos is properly updated and kept done well
         """
         action_plan = []
+        result = {}
         for item_id, num_retrieve in input.items():
             if len(self._itemPos[item_id]) > 0:
                 # Therefore can retrieve, else you dun messed up
@@ -93,6 +94,9 @@ class Librarian(gym.Env):
                     else:
                         toRetrieve = len(chest[item_id])
                     action_plan.append((toConsider, item_id, toRetrieve))
+                    if item_id not in result:
+                        result[item_id] = 0
+                    result[item_id] += 1
                     num_retrieve -= toRetrieve
 
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
@@ -105,7 +109,7 @@ class Librarian(gym.Env):
                 self.openChest()
                 self.getItems({item: num_retrieve})
                 self.closeChest()
-        return {}
+        return result
 
 
     def step(self, action):
@@ -380,9 +384,9 @@ class Librarian(gym.Env):
     def log(self):
         plt.clf()
         plt.plot(self.returns[1:])
-        plt.title('Diamond Collector')
-        plt.ylabel('Return')
-        plt.xlabel('Steps')
+        plt.title('Librarian')
+        plt.ylabel('Reward')
+        plt.xlabel('Cycles')
         plt.savefig('rer.png')
 
     def init_malmo(self):
