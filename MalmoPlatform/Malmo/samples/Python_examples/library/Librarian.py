@@ -2,7 +2,6 @@ import json
 import time
 
 import numpy
-import gym
 import gym, ray
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt
@@ -14,6 +13,7 @@ except ImportError:
     import MalmoPython
 
 import matplotlib
+from Requester import Requester
 
 matplotlib.use('TKAgg')
 
@@ -38,6 +38,10 @@ class Librarian(gym.Env):
         self._itemPos = {}
 
         self._chestContents = []
+        # Ideas: record next open slot per chest
+        self._chestPosition = []
+        # Percentage for failure to open in a chest
+        self._stochasticFailure = numpy.random.random(self.obs_size)
         self._inventory = {}
         self._nextOpen = 0
 
@@ -57,43 +61,63 @@ class Librarian(gym.Env):
         self.observation_space = Box(0, 1,
                                      shape=((self.obs_size + 1) * self.max_items_per_chest * len(self._env_items),),
                                      dtype=numpy.float32)
+        # For quick training
+        self._display = False
+        self._printLogs = False
+
+        #  todo code class for requester
+        # nondeterm situation occuring when get reward at times
+        self._requester = env_config['requester']
 
     def _optimal_retrieve(self, input: dict):
         """
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
-            Assumed that the self._itemPos is porperly updated and kept done well
+            Assumed that the self._itemPos is properly updated and kept done well
         """
         action_plan = []
+        result = {}
         for item_id, num_retrieve in input.items():
             if len(self._itemPos[item_id]) > 0:
                 # Therefore can retrieve, else you dun messed up
                 pq_items = sorted([i for i in self._itemPos[item_id]])
-                print(self._itemPos)
-                print(self._chestContents)
-                print(pq_items)
-                print(num_retrieve)
-                print(item_id)
+                if self._printLogs:
+                    print(self._itemPos)
+                    print(self._chestContents)
+                    print(pq_items)
+                    print(num_retrieve)
+                    print(item_id)
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
+                    # TODO Failure may occur on a chest, simulate here
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
                         toRetrieve = num_retrieve
                     else:
                         toRetrieve = len(chest[item_id])
                     action_plan.append((toConsider, item_id, toRetrieve))
+                    if item_id not in result:
+                        result[item_id] = 0
+                    result[item_id] += 1
                     num_retrieve -= toRetrieve
 
-        # TODO merge actions at one chest if they arise
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
 
         for position, item, num_retrieve in action_plan:
             # Should be in order from closest to furthest and retreiving the items so we should be able to execute
             #   from here
-            self.moveToChest(position+1)
-            self.openChest()
-            self.getItems({item: num_retrieve})
-            self.closeChest()
+            if self._display:
+                self.moveToChest(position + 1)
+                self.openChest()
+                self.getItems({item: num_retrieve})
+                self.closeChest()
+        self.moveToChest(0)
+        self.openChest()
+        # Max position item should be at
+        for i in range(self._nextOpen):
+            self.invAction("swap", i, i)
+        self.closeChest()
+        return result
 
     def step(self, action):
         """
@@ -109,20 +133,28 @@ class Librarian(gym.Env):
             info: <dict> dictionary of extra information
         """
         # item to be placed
-        print(self.inv_number)
-        print(self.item)
+        if self._printLogs:
+            print(f" ACTION {action}, {self.action_space}, {self.observation_space}")
+            print(self.inv_number)
+            print(self.item)
         if action == 0:
             action = self.obs_size
         self.moveToChest(action)
         reward = 0
         self.openChest()
         # new observation
+        # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
+        #  called, place once.
+        #   IF PLACED ALL ITEMS, then retrieve and calculate rewards based on ONLY if the retrieval is done
+        #   ADD MORE STOCHASITICITY IN CHESTS _> bad movement to "wrong" place -- agent has to be more robust with
+        #       placement
         for i, x in enumerate(self.obs[self.agent_position]):
             if not any(self.obs[self.agent_position][i]):
-                print(self.obs[self.agent_position][i])
+                if self._printLogs:
+                    print(self.obs[self.agent_position][i])
                 self.invAction("swap", self.inv_number, i)
                 self.obs[self.agent_position][i][self.item] = 1
-                self._itemPos[self.rMap[self.item]].add(self.agent_position-1)
+                self._itemPos[self.rMap[self.item]].add(self.agent_position - 1)
                 self._chestContents[self.agent_position - 1][self.rMap[self.item]].append(i)
                 # clear since item has been placed
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
@@ -145,17 +177,23 @@ class Librarian(gym.Env):
                 # if for loop doesn't break that means only air was found we are done and compute final reward
                 done = True
                 self.moveToChest(0)
-                self._optimal_retrieve({'stone': 2})
-        print(self.obs)
+                to_retrieve = self._requester.get_request()
+                retrieved_items = self._optimal_retrieve(to_retrieve)
+                reward = self._requester.get_reward(to_retrieve, retrieved_items, self._episode_score)
+        if self._printLogs:
+            print(self.obs)
         if done:
             # end malmo mission
             self.moveToChest(-1)
+            return self.obs.flatten(), reward, done, dict()
         world_state = self.agent.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
         done = not world_state.is_mission_running
-        print(done)
+        if self._printLogs:
+            print(done)
         self._episode_score += reward
+
         return self.obs.flatten(), reward, done, dict()
 
     def GetMissionXML(self):
@@ -170,7 +208,8 @@ class Librarian(gym.Env):
         for items in self._env_items:
             for x in range(self._env_items[items]):
                 item += f"<DrawItem x='0' y='0' z='1' type='{items}' />"
-        chests = f""
+        chests = f"<DrawBlock x='0' y='2' z='1' type='air' />" +\
+                 f"<DrawBlock x='0' y='2' z='1' type='chest' />"
         for chest_num in range(self.obs_size):
             chests += f"<DrawBlock x='{chest_num * 2 + 2}' y='2' z='1' type='air' />"
             chests += f"<DrawBlock x='{chest_num * 2 + 2}' y='2' z='1' type='chest' />"
@@ -249,50 +288,50 @@ class Librarian(gym.Env):
         self._episode_score += steps
         for i in range(steps):
             self.agent.sendCommand("moveeast")
-            time.sleep(0.2)
+            time.sleep(0.05)
 
     def moveRight(self, steps):
         self._episode_score += steps
         for i in range(steps):
             self.agent.sendCommand("movewest")
-            time.sleep(0.2)
+            time.sleep(0.05)
 
     def openChest(self):
         self._episode_score += 1
         self.agent.sendCommand("use 1")
-        time.sleep(0.2)
+        time.sleep(0.05)
         self.agent.sendCommand("use 0")
-        time.sleep(0.2)
+        time.sleep(0.05)
 
     def closeChest(self):
         self._episode_score += 1
         for _ in range(10):
             self.agent.sendCommand("movenorth")
-        time.sleep(0.2)
+        time.sleep(0.1)
         for _ in range(10):
             self.agent.sendCommand("movesouth")
-        time.sleep(0.2)
+        time.sleep(0.1)
 
     # Complex Move actions
     def moveToChest(self, chest_num):
 
         if self.agent_position == chest_num:
             return
-        if chest_num != -1:
+        if chest_num != -1 and self._printLogs:
             print(f"Moving to chest #{chest_num} ..")
         if self.agent_position - chest_num < 0:
             self.moveLeft(2 * abs(self.agent_position - chest_num))
         else:
             self.moveRight(2 * abs(self.agent_position - chest_num))
         self.agent_position = chest_num
-        time.sleep(.1)
+        time.sleep(.05)
 
     def invAction(self, action, inv_index, chest_index):
         self._updateObs()
         if "inventoriesAvailable" in self.world_obs:
             chestName = self.world_obs["inventoriesAvailable"][-1]['name']
             self.agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
-            time.sleep(0.1)
+            time.sleep(0.05)
             self._updateObs()
 
     def getItems(self, query):
@@ -300,7 +339,7 @@ class Librarian(gym.Env):
             query = dict{ key = itemId: value = number to retrieve }
         """
         # TODO Fix this to fit with the Librarian Class
-        chest = self._chestContents[self.agent_position-1]
+        chest = self._chestContents[self.agent_position - 1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
                 try:
@@ -315,11 +354,11 @@ class Librarian(gym.Env):
                 self.invAction("swap", self._nextOpen, posToGet)
                 self._nextOpen += 1
 
-                time.sleep(.1)
+                time.sleep(.05)
             # update if we have retrieved all said items within the chest
             if len(chest[itemId]) == 0:
-                del self._chestContents[self.agent_position-1][itemId]
-                self._itemPos[itemId].remove(self.agent_position-1)
+                del self._chestContents[self.agent_position - 1][itemId]
+                self._itemPos[itemId].remove(self.agent_position - 1)
         return
 
     def reset(self):
@@ -335,8 +374,9 @@ class Librarian(gym.Env):
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
-        print(self.returns)
-        if (self.episode_number % 10 == 0):
+        if self._printLogs:
+            print(self.returns)
+        if self.episode_number % 10 == 0:
             self.log()
         self._episode_score = 0
         self.agent_position = 0
@@ -358,14 +398,15 @@ class Librarian(gym.Env):
         self._inventory = {}
         self._nextOpen = 0
         self.obs[0][0][self.item] = 1
+
         return self.obs.flatten()
 
     def log(self):
         plt.clf()
         plt.plot(self.returns[1:])
-        plt.title('Diamond Collector')
-        plt.ylabel('Return')
-        plt.xlabel('Steps')
+        plt.title('Librarian')
+        plt.ylabel('Reward')
+        plt.xlabel('Cycles')
         plt.savefig('rer.png')
 
     def init_malmo(self):
@@ -383,6 +424,8 @@ class Librarian(gym.Env):
 
         for retry in range(max_retries):
             try:
+
+                time.sleep(3)
                 self.agent.startMission(my_mission, my_clients, my_mission_record, 0,
                                         'Librarian' + str(self.episode_number))
                 break
@@ -413,6 +456,7 @@ if __name__ == '__main__':
 
     env['chestNum'] = 10
     env['max_per_chest'] = 3
+    env['requester'] = Requester(5, env['items'], 0)
     trainer = ppo.PPOTrainer(env=Librarian, config={
         'env_config': env,  # No environment parameters to configure
         'framework': 'torch',  # Use pyotrch instead of tensorflow
