@@ -116,7 +116,7 @@ class Librarian(gym.Env):
         for i in range(self._nextOpen):
             self.invAction("swap", i, i)
         score += self.closeChest()
-        return result
+        return result, score
 
     def step(self, action):
         """
@@ -177,9 +177,8 @@ class Librarian(gym.Env):
                 done = True
                 self.moveToChest(0)
                 to_retrieve = self._requester.get_request()
-                retrieved_items = self._optimal_retrieve(to_retrieve)
-                reward = self._requester.get_reward(to_retrieve, retrieved_items, self._episode_score)
-                self._episode_score += reward
+                retrieved_items, score = self._optimal_retrieve(to_retrieve)
+                reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
         if self._printLogs:
             print(self.obs)
         if done:
@@ -306,7 +305,6 @@ class Librarian(gym.Env):
         return 1
 
     def closeChest(self):
-        self._episode_score += 1
         for _ in range(10):
             self.agent.sendCommand("movenorth")
         time.sleep(0.1)
