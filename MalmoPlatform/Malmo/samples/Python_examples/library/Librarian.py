@@ -180,11 +180,13 @@ class Librarian(gym.Env):
                 to_retrieve = self._requester.get_request()
                 retrieved_items = self._optimal_retrieve(to_retrieve)
                 reward = self._requester.get_reward(to_retrieve, retrieved_items, self._episode_score)
+                self._episode_score += reward
         if self._printLogs:
             print(self.obs)
         if done:
             # end malmo mission
             self.moveToChest(-1)
+            self._episode_score += reward
             return self.obs.flatten(), reward, done, dict()
         world_state = self.agent.getWorldState()
         for error in world_state.errors:
@@ -192,8 +194,8 @@ class Librarian(gym.Env):
         done = not world_state.is_mission_running
         if self._printLogs:
             print(done)
-        self._episode_score += reward
 
+        # 0 reward if no retrieve
         return self.obs.flatten(), reward, done, dict()
 
     def GetMissionXML(self):
