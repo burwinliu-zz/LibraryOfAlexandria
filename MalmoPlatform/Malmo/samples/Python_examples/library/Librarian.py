@@ -102,21 +102,20 @@ class Librarian(gym.Env):
                     num_retrieve -= toRetrieve
 
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
-
+        score = 0
         for position, item, num_retrieve in action_plan:
             # Should be in order from closest to furthest and retreiving the items so we should be able to execute
             #   from here
-            if self._display:
-                self.moveToChest(position + 1)
-                self.openChest()
-                self.getItems({item: num_retrieve})
-                self.closeChest()
-        self.moveToChest(0)
-        self.openChest()
+            score += self.moveToChest(position + 1)
+            score += self.openChest()
+            self.getItems({item: num_retrieve})
+            score += self.closeChest()
+        score += self.moveToChest(0)
+        score += self.openChest()
         # Max position item should be at
         for i in range(self._nextOpen):
             self.invAction("swap", i, i)
-        self.closeChest()
+        score += self.closeChest()
         return result
 
     def step(self, action):
@@ -287,23 +286,24 @@ class Librarian(gym.Env):
 
     # Primative move actions
     def moveLeft(self, steps):
-        self._episode_score += steps
         for i in range(steps):
             self.agent.sendCommand("moveeast")
             time.sleep(0.05)
+        return steps
 
     def moveRight(self, steps):
-        self._episode_score += steps
+
         for i in range(steps):
             self.agent.sendCommand("movewest")
             time.sleep(0.05)
+        return steps
 
     def openChest(self):
-        self._episode_score += 1
         self.agent.sendCommand("use 1")
         time.sleep(0.05)
         self.agent.sendCommand("use 0")
         time.sleep(0.05)
+        return 1
 
     def closeChest(self):
         self._episode_score += 1
@@ -313,6 +313,7 @@ class Librarian(gym.Env):
         for _ in range(10):
             self.agent.sendCommand("movesouth")
         time.sleep(0.1)
+        return 1
 
     # Complex Move actions
     def moveToChest(self, chest_num):
@@ -322,11 +323,12 @@ class Librarian(gym.Env):
         if chest_num != -1 and self._printLogs:
             print(f"Moving to chest #{chest_num} ..")
         if self.agent_position - chest_num < 0:
-            self.moveLeft(2 * abs(self.agent_position - chest_num))
+            result = self.moveLeft(2 * abs(self.agent_position - chest_num))
         else:
-            self.moveRight(2 * abs(self.agent_position - chest_num))
+            result = self.moveRight(2 * abs(self.agent_position - chest_num))
         self.agent_position = chest_num
         time.sleep(.05)
+        return result
 
     def invAction(self, action, inv_index, chest_index):
         self._updateObs()
@@ -361,7 +363,6 @@ class Librarian(gym.Env):
             if len(chest[itemId]) == 0:
                 del self._chestContents[self.agent_position - 1][itemId]
                 self._itemPos[itemId].remove(self.agent_position - 1)
-        return
 
     def reset(self):
         """
