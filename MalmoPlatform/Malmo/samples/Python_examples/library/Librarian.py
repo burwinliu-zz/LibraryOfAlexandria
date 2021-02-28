@@ -62,8 +62,8 @@ class Librarian(gym.Env):
                                      shape=((self.obs_size + 1) * self.max_items_per_chest * len(self._env_items),),
                                      dtype=numpy.float32)
         # For quick training
-        self._display = True
-        self._printLogs = False
+        self._display = False
+        self._printLogs = True
 
         #  todo code class for requester
         # nondeterm situation occuring when get reward at times
@@ -74,6 +74,9 @@ class Librarian(gym.Env):
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
             Assumed that the self._itemPos is properly updated and kept done well
         """
+        if self._printLogs:
+            print(self._itemPos)
+            print(self._chestContents)
         action_plan = []
         result = {}
         for item_id, num_retrieve in input.items():
@@ -145,7 +148,7 @@ class Librarian(gym.Env):
         self.moveToChest(action)
         self.openChest()
     
-        
+        placed = False
         # new observation
         # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
         #  called, place once.
@@ -163,6 +166,7 @@ class Librarian(gym.Env):
                 self._chestContents[self.agent_position - 1][self.rMap[self.item]].append(i)
                 # clear since item has been placed
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
+                placed = True
                 break
         
         if self._display:
@@ -170,38 +174,41 @@ class Librarian(gym.Env):
            
         self.closeChest()
         done = False
-        if self._display:
-            if self.world_obs:
-                for x in self.world_obs:
-                    if "Inventory" in x and "item" in x:
-                        if self.world_obs[x] != 'air':
-                            self.inv_number = int(x.split("_")[1])
-                            self.item = self.map[self.world_obs[x]]
-                            # set next item to be place
-                            self.obs[0][0][self.item] = 1
-                            break
+        if placed:
+            if self._display:
+                if self.world_obs:
+                    for x in self.world_obs:
+                        if "Inventory" in x and "item" in x:
+                            if self.world_obs[x] != 'air':
+                                self.inv_number = int(x.split("_")[1])
+                                self.item = self.map[self.world_obs[x]]
+                                # set next item to be place
+                                self.obs[0][0][self.item] = 1
+                                break
+                    else:
+                        # if for loop doesn't break that means only air was found we are done and compute final reward
+                        done = True
+                        self.moveToChest(0)
+                        to_retrieve = self._requester.get_request()
+                        retrieved_items, score = self._optimal_retrieve(to_retrieve)
+                        reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+            else:
+                #simulated inventory
+                for i, x in enumerate(self._placingInventory):
+                    if x != -1:
+                        self.item = x
+                        self.inv_number = i
+                        self._placingInventory[i] = -1
+                        self.obs[0][0][self.item] = 1
+                        break
                 else:
-                    # if for loop doesn't break that means only air was found we are done and compute final reward
                     done = True
                     self.moveToChest(0)
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
+                    if len(retrieved_items) == 0:
+                        raise EnvironmentError
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-        else:
-            #simulated inventory
-            for i, x in enumerate(self._placingInventory):
-                if x != -1:
-                    self.item = x
-                    self.inv_number = i
-                    self._placingInventory[i] = -1
-                    self.obs[0][0][self.item] = 1
-                    break
-            else:
-                done = True
-                self.moveToChest(0)
-                to_retrieve = self._requester.get_request()
-                retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
 
 
         if self._printLogs:
