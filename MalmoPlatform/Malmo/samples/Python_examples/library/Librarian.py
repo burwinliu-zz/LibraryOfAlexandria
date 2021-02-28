@@ -36,7 +36,7 @@ class Librarian(gym.Env):
 
         # Contents of chests key = item; value = set of items positions
         self._itemPos = {}
-
+        self._placingInventory = []
         self._chestContents = []
         # Ideas: record next open slot per chest
         self._chestPosition = []
@@ -63,7 +63,7 @@ class Librarian(gym.Env):
                                      dtype=numpy.float32)
         # For quick training
         self._display = False
-        self._printLogs = False
+        self._printLogs = True
 
         #  todo code class for requester
         # nondeterm situation occuring when get reward at times
@@ -106,16 +106,17 @@ class Librarian(gym.Env):
         for position, item, num_retrieve in action_plan:
             # Should be in order from closest to furthest and retreiving the items so we should be able to execute
             #   from here
-            score += self.moveToChest(position + 1)
-            score += self.openChest()
+            score += self.moveToChest(position + 1, True)
+            score += self.openChest(True)
             self.getItems({item: num_retrieve})
+            score += self.closeChest(True)
+        score += self.moveToChest(0, True)
+        if self._display:
+            score += self.openChest()
+            # Max position item should be at
+            for i in range(self._nextOpen):
+                self.invAction("swap", i, i)
             score += self.closeChest()
-        score += self.moveToChest(0)
-        score += self.openChest()
-        # Max position item should be at
-        for i in range(self._nextOpen):
-            self.invAction("swap", i, i)
-        score += self.closeChest()
         return result, score
 
     def step(self, action):
@@ -138,9 +139,15 @@ class Librarian(gym.Env):
             print(self.item)
         if action == 0:
             action = self.obs_size
-        self.moveToChest(action)
         reward = 0
-        self.openChest()
+        if self._display:
+            time.sleep(0.2)
+            self.moveToChest(action)
+            self.openChest()
+        else:
+            self.moveToChest(action, True)
+            self.openChest(True)
+        
         # new observation
         # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
         #  called, place once.
@@ -151,45 +158,66 @@ class Librarian(gym.Env):
             if not any(self.obs[self.agent_position][i]):
                 if self._printLogs:
                     print(self.obs[self.agent_position][i])
-                self.invAction("swap", self.inv_number, i)
+                if self._display:
+                    self.invAction("swap", self.inv_number, i)
                 self.obs[self.agent_position][i][self.item] = 1
                 self._itemPos[self.rMap[self.item]].add(self.agent_position - 1)
                 self._chestContents[self.agent_position - 1][self.rMap[self.item]].append(i)
                 # clear since item has been placed
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
                 break
+        
+        if self._display:
+            time.sleep(1)
+            self.closeChest()
         else:
-            reward = -5
-        time.sleep(1)
-        self.closeChest()
+            self.closeChest(True)
         done = False
-        if self.world_obs:
-            for x in self.world_obs:
-                if "Inventory" in x and "item" in x:
-                    if self.world_obs[x] != 'air':
-                        self.inv_number = int(x.split("_")[1])
-                        self.item = self.map[self.world_obs[x]]
-                        # set next item to be place
-                        self.obs[0][0][self.item] = 1
-                        break
+        if self._display:
+            if self.world_obs:
+                for x in self.world_obs:
+                    if "Inventory" in x and "item" in x:
+                        if self.world_obs[x] != 'air':
+                            self.inv_number = int(x.split("_")[1])
+                            self.item = self.map[self.world_obs[x]]
+                            # set next item to be place
+                            self.obs[0][0][self.item] = 1
+                            break
+                else:
+                    # if for loop doesn't break that means only air was found we are done and compute final reward
+                    done = True
+                    self.moveToChest(0)
+                    to_retrieve = self._requester.get_request()
+                    retrieved_items, score = self._optimal_retrieve(to_retrieve)
+                    reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+        else:
+            for i, x in enumerate(self._placingInventory):
+                if x != -1:
+                    self.item = x
+                    self.inv_number = i
+                    self._placingInventory[i] = -1
+                    self.obs[0][0][self.item] = 1
+                    break
             else:
-                # if for loop doesn't break that means only air was found we are done and compute final reward
                 done = True
-                self.moveToChest(0)
+                self.moveToChest(0 ,True)
                 to_retrieve = self._requester.get_request()
                 retrieved_items, score = self._optimal_retrieve(to_retrieve)
                 reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+
+
         if self._printLogs:
             print(self.obs)
         if done:
             # end malmo mission
             self.moveToChest(-1)
+            time.sleep(0.1)
             self._episode_score += reward
-            return self.obs.flatten(), reward, done, dict()
-        world_state = self.agent.getWorldState()
-        for error in world_state.errors:
-            print("Error:", error.text)
-        done = not world_state.is_mission_running
+            world_state = self.agent.getWorldState()
+            for error in world_state.errors:
+                print("Error:", error.text)
+            done = not world_state.is_mission_running
+            done = True
         if self._printLogs:
             print(done)
 
@@ -248,6 +276,8 @@ class Librarian(gym.Env):
                                 <Name>Librarian</Name>
                                 <AgentStart>
                                     <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
+                                    <Inventory>
+                                    </Inventory>
                                 </AgentStart>
                                 <AgentHandlers>
                                     <ContinuousMovementCommands/>
@@ -284,46 +314,49 @@ class Librarian(gym.Env):
                 print("retrying...")
 
     # Primative move actions
-    def moveLeft(self, steps):
-        for i in range(steps):
-            self.agent.sendCommand("moveeast")
-            time.sleep(0.05)
+    def moveLeft(self, steps, retrieval=False):
+        if self._display or not retrieval:
+            for i in range(steps):
+                self.agent.sendCommand("moveeast")
+                time.sleep(0.05)
         return steps
 
-    def moveRight(self, steps):
-
-        for i in range(steps):
-            self.agent.sendCommand("movewest")
-            time.sleep(0.05)
+    def moveRight(self, steps, retrieval=False):
+        if self._display  or not retrieval:
+            for i in range(steps):
+                self.agent.sendCommand("movewest")
+                time.sleep(0.05)
         return steps
 
-    def openChest(self):
-        self.agent.sendCommand("use 1")
-        time.sleep(0.05)
-        self.agent.sendCommand("use 0")
-        time.sleep(0.05)
+    def openChest(self, retrieval=False):
+        if self._display or not retrieval:
+            self.agent.sendCommand("use 1")
+            time.sleep(0.05)
+            self.agent.sendCommand("use 0")
+            time.sleep(0.05)
         return 1
 
-    def closeChest(self):
-        for _ in range(10):
-            self.agent.sendCommand("movenorth")
-        time.sleep(0.1)
-        for _ in range(10):
-            self.agent.sendCommand("movesouth")
-        time.sleep(0.1)
+    def closeChest(self, retrieval=False):
+        if self._display or not retrieval:
+            for _ in range(10):
+                self.agent.sendCommand("movenorth")
+            time.sleep(0.1)
+            for _ in range(10):
+                self.agent.sendCommand("movesouth")
+            time.sleep(0.1)
         return 1
 
     # Complex Move actions
-    def moveToChest(self, chest_num):
+    def moveToChest(self, chest_num, retrieval=False):
 
         if self.agent_position == chest_num:
-            return
+            return 0
         if chest_num != -1 and self._printLogs:
             print(f"Moving to chest #{chest_num} ..")
         if self.agent_position - chest_num < 0:
-            result = self.moveLeft(2 * abs(self.agent_position - chest_num))
+            result = self.moveLeft(2 * abs(self.agent_position - chest_num), retrieval)
         else:
-            result = self.moveRight(2 * abs(self.agent_position - chest_num))
+            result = self.moveRight(2 * abs(self.agent_position - chest_num),retrieval)
         self.agent_position = chest_num
         time.sleep(.05)
         return result
@@ -353,7 +386,8 @@ class Librarian(gym.Env):
                 if itemId not in self._inventory:
                     self._inventory[itemId] = set()
                 self._inventory[itemId].add(self._nextOpen)
-                self.invAction("swap", self._nextOpen, posToGet)
+                if self._display:
+                    self.invAction("swap", self._nextOpen, posToGet)
                 self._nextOpen += 1
 
                 time.sleep(.05)
@@ -381,13 +415,28 @@ class Librarian(gym.Env):
             self.log()
         self._episode_score = 0
         self.agent_position = 0
+        self._placingInventory = []
         self._updateObs()
         for x in self.world_obs:
             if "Inventory" in x and "item" in x:
-                if self.world_obs[x] != 'air':
-                    self.inv_number = int(x.split("_")[1])
-                    self.item = self.map[self.world_obs[x]]
+                if self._display:
+                    if self.world_obs[x] != 'air':
+                        self.inv_number = int(x.split("_")[1])
+                        self.item = self.map[self.world_obs[x]]
+                        break
+                else:
+                    if self.world_obs[x] in self.map:
+                        self._placingInventory.append(self.map[self.world_obs[x]])
+                    else:
+                        self._placingInventory.append(-1)
+        if self._display:
+            for i, x in enumerate(self._placingInventory):
+                if x != -1:
+                    self.item = x
+                    self.inv_number = i
+                    self._placingInventory[i] = -1
                     break
+
         self._itemPos = {}
         for items in self.map:
             self._itemPos[items] = set()
