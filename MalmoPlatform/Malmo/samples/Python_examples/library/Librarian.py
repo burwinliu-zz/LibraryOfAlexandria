@@ -465,5 +465,9 @@ if __name__ == '__main__':
         'num_workers': 0  # We aren't using parallelism
     })
 
+    i = 0
     while True:
+        i += 1
         print(trainer.train())
+        if i%100 == 0:
+            print("checkpoint saved at:", trainer.save())
