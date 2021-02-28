@@ -62,7 +62,7 @@ class Librarian(gym.Env):
                                      shape=((self.obs_size + 1) * self.max_items_per_chest * len(self._env_items),),
                                      dtype=numpy.float32)
         # For quick training
-        self._display = False
+        self._display = True
         self._printLogs = False
 
         #  todo code class for requester
@@ -428,7 +428,7 @@ class Librarian(gym.Env):
                         self._placingInventory.append(self.map[self.world_obs[x]])
                     else:
                         self._placingInventory.append(-1)
-        if self._display:
+        if not self._display:
             for i, x in enumerate(self._placingInventory):
                 if x != -1:
                     self.item = x
