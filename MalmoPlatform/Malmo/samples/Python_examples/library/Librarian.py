@@ -106,11 +106,11 @@ class Librarian(gym.Env):
         for position, item, num_retrieve in action_plan:
             # Should be in order from closest to furthest and retreiving the items so we should be able to execute
             #   from here
-            score += self.moveToChest(position + 1, True)
-            score += self.openChest(True)
+            score += self.moveToChest(position + 1)
+            score += self.openChest()
             self.getItems({item: num_retrieve})
-            score += self.closeChest(True)
-        score += self.moveToChest(0, True)
+            score += self.closeChest()
+        score += self.moveToChest(0)
         if self._display:
             score += self.openChest()
             # Max position item should be at
@@ -142,11 +142,9 @@ class Librarian(gym.Env):
         reward = 0
         if self._display:
             time.sleep(0.2)
-            self.moveToChest(action)
-            self.openChest()
-        else:
-            self.moveToChest(action, True)
-            self.openChest(True)
+        self.moveToChest(action)
+        self.openChest()
+    
         
         # new observation
         # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
@@ -169,9 +167,8 @@ class Librarian(gym.Env):
         
         if self._display:
             time.sleep(1)
-            self.closeChest()
-        else:
-            self.closeChest(True)
+           
+        self.closeChest()
         done = False
         if self._display:
             if self.world_obs:
@@ -191,6 +188,7 @@ class Librarian(gym.Env):
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
         else:
+            #simulated inventory
             for i, x in enumerate(self._placingInventory):
                 if x != -1:
                     self.item = x
@@ -200,7 +198,7 @@ class Librarian(gym.Env):
                     break
             else:
                 done = True
-                self.moveToChest(0 ,True)
+                self.moveToChest(0)
                 to_retrieve = self._requester.get_request()
                 retrieved_items, score = self._optimal_retrieve(to_retrieve)
                 reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
@@ -210,14 +208,15 @@ class Librarian(gym.Env):
             print(self.obs)
         if done:
             # end malmo mission
-            self.moveToChest(-1)
-            time.sleep(0.1)
+            self.moveToChest(-1, True)
             self._episode_score += reward
-            world_state = self.agent.getWorldState()
-            for error in world_state.errors:
-                print("Error:", error.text)
-            done = not world_state.is_mission_running
-            done = True
+            done = False
+            while not done:
+                world_state = self.agent.getWorldState()
+                for error in world_state.errors:
+                    print("Error:", error.text)
+                done = not world_state.is_mission_running
+                time.sleep(0.1)
         if self._printLogs:
             print(done)
 
@@ -314,30 +313,30 @@ class Librarian(gym.Env):
                 print("retrying...")
 
     # Primative move actions
-    def moveLeft(self, steps, retrieval=False):
-        if self._display or not retrieval:
+    def moveLeft(self, steps, force):
+        if self._display or force:
             for i in range(steps):
                 self.agent.sendCommand("moveeast")
                 time.sleep(0.05)
         return steps
 
-    def moveRight(self, steps, retrieval=False):
-        if self._display  or not retrieval:
+    def moveRight(self, steps, force):
+        if self._display or force:
             for i in range(steps):
                 self.agent.sendCommand("movewest")
                 time.sleep(0.05)
         return steps
 
-    def openChest(self, retrieval=False):
-        if self._display or not retrieval:
+    def openChest(self):
+        if self._display:
             self.agent.sendCommand("use 1")
             time.sleep(0.05)
             self.agent.sendCommand("use 0")
             time.sleep(0.05)
         return 1
 
-    def closeChest(self, retrieval=False):
-        if self._display or not retrieval:
+    def closeChest(self):
+        if self._display:
             for _ in range(10):
                 self.agent.sendCommand("movenorth")
             time.sleep(0.1)
@@ -347,16 +346,16 @@ class Librarian(gym.Env):
         return 1
 
     # Complex Move actions
-    def moveToChest(self, chest_num, retrieval=False):
+    def moveToChest(self, chest_num, force=False):
 
         if self.agent_position == chest_num:
             return 0
         if chest_num != -1 and self._printLogs:
             print(f"Moving to chest #{chest_num} ..")
         if self.agent_position - chest_num < 0:
-            result = self.moveLeft(2 * abs(self.agent_position - chest_num), retrieval)
+            result = self.moveLeft(2 * abs(self.agent_position - chest_num), force)
         else:
-            result = self.moveRight(2 * abs(self.agent_position - chest_num),retrieval)
+            result = self.moveRight(2 * abs(self.agent_position - chest_num), force)
         self.agent_position = chest_num
         time.sleep(.05)
         return result
@@ -406,7 +405,7 @@ class Librarian(gym.Env):
         # Reset Malmo
         self.episode_number += 1
         world_state = self.init_malmo()
-        time.sleep(0.2)
+        time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
         if self._printLogs:
