@@ -63,7 +63,7 @@ class Librarian(gym.Env):
                                      dtype=numpy.float32)
         # For quick training
         self._display = False
-        self._printLogs = True
+        self._printLogs = False
 
         #  todo code class for requester
         # nondeterm situation occuring when get reward at times
@@ -406,7 +406,7 @@ class Librarian(gym.Env):
         # Reset Malmo
         self.episode_number += 1
         world_state = self.init_malmo()
-        time.sleep(1)
+        time.sleep(0.2)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
         if self._printLogs:
