@@ -98,7 +98,7 @@ class Librarian(gym.Env):
                     action_plan.append((toConsider, item_id, toRetrieve))
                     if item_id not in result:
                         result[item_id] = 0
-                    result[item_id] += 1
+                    result[item_id] += toRetrieve
                     num_retrieve -= toRetrieve
 
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
@@ -514,5 +514,9 @@ if __name__ == '__main__':
         'num_workers': 0  # We aren't using parallelism
     })
 
+    i = 0
     while True:
+        i += 1
         print(trainer.train())
+        if i%100 == 0:
+            print("checkpoint saved at:", trainer.save())
