@@ -241,7 +241,7 @@ class Librarian(gym.Env):
         item = f""
         for items in self._env_items:
             for x in range(self._env_items[items]):
-                item += f"<DrawItem x='0' y='0' z='1' type='{items}' />"
+                item += f"<DrawItem x='0' y='3' z='1' type='{items}' />"
         chests = f"<DrawBlock x='0' y='2' z='1' type='air' />" +\
                  f"<DrawBlock x='0' y='2' z='1' type='chest' />"
         for chest_num in range(self.obs_size):
@@ -281,7 +281,7 @@ class Librarian(gym.Env):
                             <AgentSection mode="Survival">
                                 <Name>Librarian</Name>
                                 <AgentStart>
-                                    <Placement x="0.5" y="2" z="0.5" pitch="40" yaw="0"/>
+                                    <Placement x="0.5" y="3" z="0.5" pitch="40" yaw="0"/>
                                     <Inventory>
                                     </Inventory>
                                 </AgentStart>
