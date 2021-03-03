@@ -521,8 +521,11 @@ if __name__ == '__main__':
     })
 
     i = 0
-    while True:
-        i += 1
-        print(trainer.train())
-        if i%100 == 0:
-            print("checkpoint saved at:", trainer.save())
+    try:
+        while True:
+            i += 1
+            print(trainer.train())
+            if i%100 == 0:
+                print("checkpoint saved at:", trainer.save())
+    finally:
+        print(f"SAVED AT: {trainer.save()}")
