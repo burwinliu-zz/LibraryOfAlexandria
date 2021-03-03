@@ -62,8 +62,9 @@ class Librarian(gym.Env):
                                      shape=((self.obs_size + 1) * self.max_items_per_chest * len(self._env_items),),
                                      dtype=numpy.float32)
         # For quick training
-        self._display = False
-        self._printLogs = True
+        self._display = env_config['_display']
+        self._print_logs = env_config['_print_logs']
+        self._sleep_interval = env_config['_sleep_interval']
 
         #  todo code class for requester
         # nondeterm situation occuring when get reward at times
@@ -74,7 +75,7 @@ class Librarian(gym.Env):
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
             Assumed that the self._itemPos is properly updated and kept done well
         """
-        if self._printLogs:
+        if self._print_logs:
             print(self._itemPos)
             print(self._chestContents)
         action_plan = []
@@ -83,7 +84,7 @@ class Librarian(gym.Env):
             if len(self._itemPos[item_id]) > 0:
                 # Therefore can retrieve, else you dun messed up
                 pq_items = sorted([i for i in self._itemPos[item_id]])
-                if self._printLogs:
+                if self._print_logs:
                     print(self._itemPos)
                     print(self._chestContents)
                     print(pq_items)
@@ -136,7 +137,7 @@ class Librarian(gym.Env):
             info: <dict> dictionary of extra information
         """
         # item to be placed
-        if self._printLogs:
+        if self._print_logs:
             print(f" ACTION {action}, {self.action_space}, {self.observation_space}")
             print(self.inv_number)
             print(self.item)
@@ -144,7 +145,7 @@ class Librarian(gym.Env):
             action = self.obs_size
         reward = 0
         if self._display:
-            time.sleep(0.2)
+            time.sleep(self._sleep_interval)
         self.moveToChest(action)
         self.openChest()
     
@@ -157,7 +158,7 @@ class Librarian(gym.Env):
         #       placement
         for i, x in enumerate(self.obs[self.agent_position]):
             if not any(self.obs[self.agent_position][i]):
-                if self._printLogs:
+                if self._print_logs:
                     print(self.obs[self.agent_position][i])
                 if self._display:
                     self.invAction("swap", self.inv_number, i)
@@ -193,7 +194,7 @@ class Librarian(gym.Env):
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
                         reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
             else:
-                #simulated inventory
+                # simulated inventory
                 for i, x in enumerate(self._placingInventory):
                     if x != -1:
                         self.item = x
@@ -211,7 +212,7 @@ class Librarian(gym.Env):
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
 
 
-        if self._printLogs:
+        if self._print_logs:
             print(self.obs)
         if done:
             # end malmo mission
@@ -223,8 +224,8 @@ class Librarian(gym.Env):
                 for error in world_state.errors:
                     print("Error:", error.text)
                 done = not world_state.is_mission_running
-                time.sleep(0.1)
-        if self._printLogs:
+                time.sleep(self._sleep_interval)
+        if self._print_logs:
             print(done)
 
         # 0 reward if no retrieve
@@ -324,32 +325,32 @@ class Librarian(gym.Env):
         if self._display or force:
             for i in range(steps):
                 self.agent.sendCommand("moveeast")
-                time.sleep(0.05)
+                time.sleep(self._sleep_interval)
         return steps
 
     def moveRight(self, steps, force):
         if self._display or force:
             for i in range(steps):
                 self.agent.sendCommand("movewest")
-                time.sleep(0.05)
+                time.sleep(self._sleep_interval)
         return steps
 
     def openChest(self):
         if self._display:
             self.agent.sendCommand("use 1")
-            time.sleep(0.05)
+            time.sleep(self._sleep_interval)
             self.agent.sendCommand("use 0")
-            time.sleep(0.05)
+            time.sleep(self._sleep_interval)
         return 1
 
     def closeChest(self):
         if self._display:
             for _ in range(10):
                 self.agent.sendCommand("movenorth")
-            time.sleep(0.1)
+            time.sleep(self._sleep_interval)
             for _ in range(10):
                 self.agent.sendCommand("movesouth")
-            time.sleep(0.1)
+            time.sleep(self._sleep_interval)
         return 1
 
     # Complex Move actions
@@ -357,14 +358,14 @@ class Librarian(gym.Env):
 
         if self.agent_position == chest_num:
             return 0
-        if chest_num != -1 and self._printLogs:
+        if chest_num != -1 and self._print_logs:
             print(f"Moving to chest #{chest_num} ..")
         if self.agent_position - chest_num < 0:
             result = self.moveLeft(2 * abs(self.agent_position - chest_num), force)
         else:
             result = self.moveRight(2 * abs(self.agent_position - chest_num), force)
         self.agent_position = chest_num
-        time.sleep(.05)
+        time.sleep(self._sleep_interval)
         return result
 
     def invAction(self, action, inv_index, chest_index):
@@ -372,7 +373,7 @@ class Librarian(gym.Env):
         if "inventoriesAvailable" in self.world_obs:
             chestName = self.world_obs["inventoriesAvailable"][-1]['name']
             self.agent.sendCommand(f"{action}InventoryItems {inv_index} {chestName}:{chest_index}")
-            time.sleep(0.05)
+            time.sleep(self._sleep_interval)
             self._updateObs()
 
     def getItems(self, query):
@@ -396,7 +397,7 @@ class Librarian(gym.Env):
                     self.invAction("swap", self._nextOpen, posToGet)
                 self._nextOpen += 1
 
-                time.sleep(.05)
+                time.sleep(self._sleep_interval)
             # update if we have retrieved all said items within the chest
             if len(chest[itemId]) == 0:
                 del self._chestContents[self.agent_position - 1][itemId]
@@ -415,7 +416,7 @@ class Librarian(gym.Env):
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
-        if self._printLogs:
+        if self._print_logs:
             print(self.returns)
         if self.episode_number % 10 == 0:
             self.log()
@@ -505,17 +506,23 @@ class Librarian(gym.Env):
 if __name__ == '__main__':
     # ray.shutdown()
     # ray.init()
-    env = {}
-    env['items'] = {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}
-    env['mapping'] = {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5}
-    env['rmapping'] = {0: 'stone', 1: 'diamond', 2: 'glass', 3: 'ladder', 4: 'brick', 5: 'dragon_egg'}
-
-    env['chestNum'] = 10
-    env['max_per_chest'] = 3
     # Max request items, valid items, difficulty level
     MAX_ITEMS = 5
-    COMPLEXITY_LEVEL = 1
+    COMPLEXITY_LEVEL = 2
+
+    env = {
+        'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
+        'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},
+        'rmapping': {0: 'stone', 1: 'diamond', 2: 'glass', 3: 'ladder', 4: 'brick', 5: 'dragon_egg'},
+        'chestNum': 10,
+        'max_per_chest': 3,
+
+        '_display': False,
+        '_print_logs': False,
+        '_sleep_interval': .01,
+    }
     env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
+
     trainer = ppo.PPOTrainer(env=Librarian, config={
         'env_config': env,  # No environment parameters to configure
         'framework': 'torch',  # Use pyotrch instead of tensorflow
@@ -531,4 +538,5 @@ if __name__ == '__main__':
             if i%100 == 0:
                 print("checkpoint saved at:", trainer.save())
     finally:
-        print(f"SAVED AT: {trainer.save()}")
+        print(f"LIBRARIAN SAVED AT: {trainer.save()}")
+        print(f"REQUESTER SAVED AT: {env['requester'].save_requester()}")
