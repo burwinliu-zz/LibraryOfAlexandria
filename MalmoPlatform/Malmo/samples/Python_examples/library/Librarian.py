@@ -512,7 +512,10 @@ if __name__ == '__main__':
 
     env['chestNum'] = 10
     env['max_per_chest'] = 3
-    env['requester'] = Requester(5, env['items'], 0)
+    # Max request items, valid items, difficulty level
+    MAX_ITEMS = 5
+    COMPLEXITY_LEVEL = 1
+    env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
     trainer = ppo.PPOTrainer(env=Librarian, config={
         'env_config': env,  # No environment parameters to configure
         'framework': 'torch',  # Use pyotrch instead of tensorflow
