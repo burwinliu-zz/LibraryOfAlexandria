@@ -25,6 +25,29 @@ class Requester:
             self.stepWeights = lambda x: x*-1
 
         # Random numbers, probability get_request, get_reward
+        if complexity_level == 1:
+            # Random distribution of multiple objects, restricted to max_req number of objects
+            validNums = [i for i in range(len(available_input))]
+            while len(validNums) > max_req:
+                validNums.pop(random.randint(0, len(available_input)-1))
+            randomNums = sorted([random.random() for _ in range(len(validNums))])
+            randomNums[-1] = 1
+
+            self.probDist = [(available_input[validNums[i]], randomNums[i]) for i in range(len(validNums))]
+            self.passedReward = {i: lambda x: 0 for i in self._items}
+            self.failedReward = {i: lambda x: x * -100 for i in self._items}
+            self.stepWeights = lambda x: x * -1
+
+        if complexity_level == 2:
+            # Random distribution for all objects
+            randomNums = sorted([random.random() for _ in range(len(available_input))])
+            randomNums[-1] = 1
+
+            self.probDist = [(available_input[i], randomNums[i]) for i in range(len(available_input))]
+            self.passedReward = {i: lambda x: 0 for i in self._items}
+            self.failedReward = {i: lambda x: x * -100 for i in self._items}
+            self.stepWeights = lambda x: x * -1
+
 
     def get_request(self):
         # .4 diamond, .6 stone
