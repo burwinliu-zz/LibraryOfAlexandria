@@ -8,9 +8,12 @@ if __name__ == '__main__':
     # Choose one of two to set up req path to given position
     # req_path = input("Requester Path: ")
     # lib_path = input('Lib Path: ')
+    # stochastic_array = input('Chest Changes: ')
 
     req_path = "test"
     lib_path = "test"
+    stochastic_array = [0.35995969, 0.679561, 0.140505, 0.16909558, 0.969226, 0.62966605, 0.18746248, 0.90296069,
+                        0.76486581, 0.90063654]
 
     # ray.shutdown()
     # ray.init()
@@ -21,8 +24,10 @@ if __name__ == '__main__':
         'chestNum': 10,
         'max_per_chest': 3,
         'requester': Requester(None, None, None, req_path),
+
         '_display': True,
         '_print_logs': True,
         '_sleep_interval': .5,
+        '_stochasticFailure': stochastic_array
     }
     # todo load librarian from lib_path + maybe chest distribution? Up to Kelson

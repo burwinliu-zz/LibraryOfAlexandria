@@ -41,7 +41,7 @@ class Librarian(gym.Env):
         # Ideas: record next open slot per chest
         self._chestPosition = []
         # Percentage for failure to open in a chest
-        self._stochasticFailure = numpy.random.random(self.obs_size)
+        self._stochasticFailure = env_config['_stochasticFailure']
         self._inventory = {}
         self._nextOpen = 0
 
@@ -507,6 +507,11 @@ if __name__ == '__main__':
     # ray.shutdown()
     # ray.init()
     # Max request items, valid items, difficulty level
+    # TODO: Create a benchmark with a "simple method" by averaging all items and showing how it doesnt work
+    # Scatterplot, *preferred*  line as moving average  -- (10 cycles and find average) ,
+    #   histograms, bin it every 10 cycles (or maybe 50?) -- saving data then mess with plot
+    # Data + model to be saved --
+    #
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
 
@@ -520,6 +525,7 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': False,
         '_sleep_interval': .01,
+        '_stochasticFailure': numpy.random.random(10)
     }
     env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
 
@@ -535,8 +541,10 @@ if __name__ == '__main__':
         while True:
             i += 1
             print(trainer.train())
-            if i%100 == 0:
+            if i % 100 == 0:
                 print("checkpoint saved at:", trainer.save())
     finally:
         print(f"LIBRARIAN SAVED AT: {trainer.save()}")
         print(f"REQUESTER SAVED AT: {env['requester'].save_requester()}")
+        # TODO, change this to save the failure to json file and loading there, or something along those lines
+        print(env['_stochasticFailure'])
