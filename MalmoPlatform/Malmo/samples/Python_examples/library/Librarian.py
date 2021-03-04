@@ -1,5 +1,6 @@
 import json
 import time
+from random import random
 
 import numpy
 import gym, ray
@@ -93,7 +94,8 @@ class Librarian(gym.Env):
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
-                    # TODO Failure may occur on a chest, simulate here
+                    if random() > self._stochasticFailure[toConsider]:
+                        continue
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
                         toRetrieve = num_retrieve
