@@ -29,8 +29,11 @@ class BenchMark:
         self._inventory = {}
         self._itemPos = {}
         self._chestContents = []
-        self.distribution = sorted([(key, val/min(distribution.values())) for key, val in distribution.items()],
-                                   key=lambda x: x[1], reverse=True)
+        self.distribution = sorted([(key, val/max(distribution.values())) for key, val in distribution.items()],
+                                   key=lambda x: x[1])
+        # Idea; pop, add one, then record number of "partial items" added, until any hit the number one. if never
+        # happens, or the item runs out, pop next item, and then divide all values by new prob of new item, then
+        # continue until no items remain
         print(self.distribution)
 
     def GetMissionXML(self):
