@@ -99,12 +99,12 @@ class Requester:
             current_time = time.strftime("%Y_%j_%H_%M_%S_requester", t)
             path = Path(__file__).parent.absolute().joinpath("savedRequester").joinpath(current_time)
 
-            toSave = {
-                "max_req": self.max_req,
-                "available": self.available,
-                "_items": self._items,
-                "probDist": self.probDist
-            }
-            with open(path, 'w') as f:
-                json.dump(toSave, f)
+        toSave = {
+            "max_req": self.max_req,
+            "available": self.available,
+            "_items": self._items,
+            "probDist": self.probDist
+        }
+        with open(path, 'w+') as f:
+            json.dump(toSave, f)
         return path

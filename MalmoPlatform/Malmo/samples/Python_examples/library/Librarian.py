@@ -3,6 +3,8 @@ import time
 from random import random
 
 import numpy
+import os
+import path
 import gym, ray
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt
@@ -17,7 +19,6 @@ import matplotlib
 from Requester import Requester
 
 matplotlib.use('TKAgg')
-
 
 class Librarian(gym.Env):
     def __init__(self, env_config):
@@ -45,8 +46,10 @@ class Librarian(gym.Env):
         self._stochasticFailure = env_config['_stochasticFailure']
         self._inventory = {}
         self._nextOpen = 0
-
+        self._log_freq = 10
+        self.directory = env_config['directoryName']
         # model params
+        self.action_tracker = {}
         self._episode_score = 0
         self.agent_position = 0
         self.episode_number = 0
@@ -139,6 +142,9 @@ class Librarian(gym.Env):
             info: <dict> dictionary of extra information
         """
         # item to be placed
+        if action not in self.action_tracker:
+            self.action_tracker[action] = 0
+        self.action_tracker[action] += 1
         if self._print_logs:
             print(f" ACTION {action}, {self.action_space}, {self.observation_space}")
             print(self.inv_number)
@@ -209,8 +215,6 @@ class Librarian(gym.Env):
                     self.moveToChest(0)
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                    if len(retrieved_items) == 0:
-                        raise EnvironmentError
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
 
 
@@ -420,7 +424,7 @@ class Librarian(gym.Env):
         self.returns.append(self._episode_score)
         if self._print_logs:
             print(self.returns)
-        if self.episode_number % 10 == 0:
+        if self.episode_number % self._log_freq == 0:
             self.log()
         self._episode_score = 0
         self.agent_position = 0
@@ -461,13 +465,35 @@ class Librarian(gym.Env):
         return self.obs.flatten()
 
     def log(self):
+        if self.episode_number % 100 == 0:
+            plt.clf()
+            plt.hist(self.returns[self.episode_number-100 + 1:self.episode_number])
+            plt.title('Reward Distribution at ' + str(self.episode_number) )
+            plt.ylabel('Occurance')
+            plt.xlabel('Reward')
+            plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
+            toSave = {}
+            with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
+                for step, value in enumerate(self.returns[1:]):
+                    toSave[int(step)] = int(value)
+                json.dump(toSave, f)
+            plt.clf()
+            plt.bar(self.action_tracker.keys(), self.action_tracker.values())
+            plt.title('Action Distribution at ' + str(self.episode_number) )
+            plt.ylabel('Occurance')
+            plt.xlabel('Action')
+            plt.savefig(f"{self.directory}/action_barchart{str(self.episode_number)}.png")
+            self.action_tracker = {}
+
+        box = numpy.ones(self._log_freq) / self._log_freq
+        returns_smooth = numpy.convolve(self.returns[1:], box, mode='same')
         plt.clf()
-        plt.plot(self.returns[1:])
+        plt.plot(returns_smooth)
         plt.title('Librarian')
         plt.ylabel('Reward')
-        plt.xlabel('Cycles')
-        plt.savefig('rer.png')
-
+        plt.xlabel('Episodes')
+        plt.savefig(f"{self.directory}/smooth_returns.png")
+       
     def init_malmo(self):
         """
         Initialize new malmo mission.
@@ -516,6 +542,12 @@ if __name__ == '__main__':
     #
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
+    logs_count = 0
+    for files in os.listdir():
+        if os.path.isdir(files) and 'logs' in files:
+            logs_count += 1
+    log_number = 'logs' + str(logs_count)
+    os.mkdir(log_number)
 
     env = {
         'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
@@ -523,9 +555,9 @@ if __name__ == '__main__':
         'rmapping': {0: 'stone', 1: 'diamond', 2: 'glass', 3: 'ladder', 4: 'brick', 5: 'dragon_egg'},
         'chestNum': 10,
         'max_per_chest': 3,
-
+        'directoryName': log_number,
         '_display': False,
-        '_print_logs': False,
+        '_print_logs': True,
         '_sleep_interval': .01,
         '_stochasticFailure': numpy.random.random(10)
     }
@@ -546,7 +578,7 @@ if __name__ == '__main__':
             if i % 100 == 0:
                 print("checkpoint saved at:", trainer.save())
     finally:
-        print(f"LIBRARIAN SAVED AT: {trainer.save()}")
-        print(f"REQUESTER SAVED AT: {env['requester'].save_requester()}")
+        print(f"LIBRARIAN SAVED AT: {trainer.save(log_number)}")
+        print(f"REQUESTER SAVED AT: {env['requester'].save_requester(log_number+'/requester.json')}")
         # TODO, change this to save the failure to json file and loading there, or something along those lines
         print(env['_stochasticFailure'])
