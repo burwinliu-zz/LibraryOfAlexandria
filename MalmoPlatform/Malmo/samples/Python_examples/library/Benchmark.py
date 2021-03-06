@@ -15,7 +15,7 @@ except ImportError:
 
 
 class BenchMark:
-    def __init__(self, chests, failure):
+    def __init__(self, distribution, failure):
         self.episode_number = 0
         self.obs_size = 10
         self._env_items = {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}
@@ -24,7 +24,14 @@ class BenchMark:
         self._display = True
         self._sleep_interval = .2
         self.agent_position = 0
+        self._nextOpen = 0
 
+        self._inventory = {}
+        self._itemPos = {}
+        self._chestContents = []
+        self.distribution = sorted([(key, val/min(distribution.values())) for key, val in distribution.items()],
+                                   key=lambda x: x[1], reverse=True)
+        print(self.distribution)
 
     def GetMissionXML(self):
         leftX = self.obs_size * 2 + 2
@@ -139,14 +146,14 @@ class BenchMark:
 
         return world_state
 
-    def _optimal_retrieve(self, input: dict):
+    def optimal_retrieve(self, inputRetrieve: dict):
         """
             input: dict of objects to retrieve in format of {key: object_id, value: number to retrieve}
             Assumed that the self._itemPos is properly updated and kept done well
         """
         action_plan = []
         result = {}
-        for item_id, num_retrieve in input.items():
+        for item_id, num_retrieve in inputRetrieve.items():
             if len(self._itemPos[item_id]) > 0:
                 # Therefore can retrieve, else you dun messed up
                 pq_items = sorted([i for i in self._itemPos[item_id]])
@@ -178,7 +185,6 @@ class BenchMark:
         score += self.moveToChest(0)
         if self._display:
             score += self.openChest()
-            # Max position item should be at
             for i in range(self._nextOpen):
                 self.invAction("swap", i, i)
             score += self.closeChest()
@@ -254,7 +260,6 @@ class BenchMark:
         """
             query = dict{ key = itemId: value = number to retrieve }
         """
-        # TODO Fix this to fit with the Librarian Class
         chest = self._chestContents[self.agent_position - 1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
@@ -277,25 +282,42 @@ class BenchMark:
                 del self._chestContents[self.agent_position - 1][itemId]
                 self._itemPos[itemId].remove(self.agent_position - 1)
 
-    def log(self):
-        plt.clf()
-        plt.plot(self.returns[1:])
-        plt.title('Librarian')
-        plt.ylabel('Reward')
-        plt.xlabel('Cycles')
-        plt.savefig('rer.png')
+    def reset(self):
+        # Todo, according to self.distribution, distribute items in self._itemPos and self._chestContents
+
+
+        pass
 
 
 if __name__ == "__main__":
     req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}, 2)
     # Percentage for failure to open in a chest
-    stochasticFailure = [0.35995969, 0.679561, 0.140505, 0.16909558, 0.969226, 0.62966605, 0.18746248, 0.90296069,
-                         0.76486581, 0.90063654]
+    stochasticFailure = [0.024717291527897946, 0.010020667324609045, 0.05792171931559958, 0.06541976810436156,
+                         0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+                         0.01715813232043357, 0.010745490849078655]
+
+    length = 0
+    record = {}
     for _ in range(10000):
         # TODO Average all inputs from requester, and distribute to correct chests
-        chests = []
-        pass
+        newReq = req.get_request()
+        for i, j in newReq.items():
+            if i not in record:
+                record[i] = 0
+            record[i] += j
+            length += j
+    probDist = {}
+    for i, j in record.items():
+        probDist[i] = j/length
 
-    for _ in range(50):
-        mark = BenchMark(chests, stochasticFailure)
-        mark.init_malmo()
+    mark = BenchMark(probDist, stochasticFailure)
+
+    # rewards = []
+    # for _ in range(50):
+    #     mark.reset()
+    #     mark.init_malmo()
+    #     newReq = req.get_request()
+    #     result, score = mark.optimal_retrieve(newReq)
+    #     reward = req.get_reward(newReq, result, score)
+    #     rewards.append(reward)
+    # print(rewards)

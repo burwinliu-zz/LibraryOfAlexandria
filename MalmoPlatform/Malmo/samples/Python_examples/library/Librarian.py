@@ -559,7 +559,7 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': True,
         '_sleep_interval': .01,
-        '_stochasticFailure': numpy.random.random(10)
+        '_stochasticFailure': [i * .1 for i in numpy.random.random(10)]
     }
     env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
 
