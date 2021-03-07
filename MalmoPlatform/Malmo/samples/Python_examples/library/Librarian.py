@@ -567,7 +567,7 @@ if __name__ == '__main__':
     if req_path == None:
         env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
     else:
-        Requester(None, None, None, req_path)
+        env['requester'] = Requester(None, None, None, req_path)
 
     trainer = ppo.PPOTrainer(env=Librarian, config={
         'env_config': env,  # No environment parameters to configure
