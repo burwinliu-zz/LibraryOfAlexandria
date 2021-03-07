@@ -225,8 +225,6 @@ class BenchMark:
                         result[item_id] = 0
                     result[item_id] += toRetrieve
                     num_retrieve -= toRetrieve
-                    if len(pq_items) == 0:
-                        print("hmm")
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
         score = 0
         for position, item, num_retrieve in action_plan:
