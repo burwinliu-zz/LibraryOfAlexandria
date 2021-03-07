@@ -4,7 +4,7 @@ from random import random
 
 import numpy
 import os
-import path
+
 import gym, ray
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt

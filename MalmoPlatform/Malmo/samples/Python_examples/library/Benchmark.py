@@ -21,20 +21,71 @@ class BenchMark:
         self._env_items = {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}
         self.agent = MalmoPython.AgentHost()
         self._stochasticFailure = failure
-        self._display = True
+        self._display = False
         self._sleep_interval = .2
         self.agent_position = 0
         self._nextOpen = 0
+        self.max_items_per_chest = 3
 
         self._inventory = {}
         self._itemPos = {}
         self._chestContents = []
-        self.distribution = sorted([(key, val/max(distribution.values())) for key, val in distribution.items()],
-                                   key=lambda x: x[1])
+
         # Idea; pop, add one, then record number of "partial items" added, until any hit the number one. if never
         # happens, or the item runs out, pop next item, and then divide all values by new prob of new item, then
         # continue until no items remain
-        print(self.distribution)
+        tempRecord = {key: val // 64 for key, val in self._env_items.items()}
+        tempDistribution = sorted([[key, val] for key, val in distribution.items()],
+                                  key=lambda x: x[1])
+        distCurr = {key: val for key, val in tempDistribution}
+        contents = self.max_items_per_chest
+        pos = -1
+        # This entire unholy piece of code is made to simulate the distribution of items right now, with the
+        # method prescribed above.
+        while len(tempDistribution) > 0:
+            current = tempDistribution.pop()
+            # Set the distribution values correctly to their appropriate weights
+            for iterate_val in range(len(tempDistribution)):
+                tempDistribution[iterate_val][1] /= current[1]
+                distCurr[tempDistribution[iterate_val][0]] /= current[1]
+            while tempRecord[current[0]] > 0:
+                if contents == self.max_items_per_chest:
+                    self._chestContents.append({})
+                    contents = 0
+                    pos += 1
+                if current[0] not in self._chestContents[pos]:
+                    self._chestContents[pos][current[0]] = []
+                if current[0] not in self._itemPos:
+                    self._itemPos[current[0]] = set()
+                self._chestContents[pos][current[0]].append(contents)
+                self._itemPos[current[0]].add(pos)
+                tempRecord[current[0]] -= 1
+                contents += 1
+
+                for key in range(len(tempDistribution)):
+                    tempDistribution[key][1] += distCurr[tempDistribution[key][0]]
+                    while tempDistribution[key][1] > 0:
+                        if contents == self.max_items_per_chest:
+                            self._chestContents.append({})
+                            contents = 0
+                            pos += 1
+                        item = tempDistribution[key][0]
+                        tempRecord[item] -= 1
+                        tempDistribution[key][1] -= 1
+                        contents += 1
+                        if item not in self._chestContents[pos]:
+                            self._chestContents[pos][item] = []
+                        if item not in self._itemPos:
+                            self._itemPos[item] = set()
+                        self._chestContents[pos][item].append(contents)
+                        self._itemPos[item].add(pos)
+        print(self._chestContents, self._itemPos)
+        self.default = [self._chestContents, self._itemPos]
+
+
+
+
+
 
     def GetMissionXML(self):
         leftX = self.obs_size * 2 + 2
@@ -163,7 +214,7 @@ class BenchMark:
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
-                    if random() > self._stochasticFailure[toConsider]:
+                    if random() < self._stochasticFailure[toConsider]:
                         continue
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
@@ -287,8 +338,8 @@ class BenchMark:
 
     def reset(self):
         # Todo, according to self.distribution, distribute items in self._itemPos and self._chestContents
-
-
+        self._chestContents, self._itemPos = self.default
+        self.moveToChest(-1, True)
         pass
 
 
@@ -315,12 +366,12 @@ if __name__ == "__main__":
 
     mark = BenchMark(probDist, stochasticFailure)
 
-    # rewards = []
-    # for _ in range(50):
-    #     mark.reset()
-    #     mark.init_malmo()
-    #     newReq = req.get_request()
-    #     result, score = mark.optimal_retrieve(newReq)
-    #     reward = req.get_reward(newReq, result, score)
-    #     rewards.append(reward)
-    # print(rewards)
+    rewards = []
+    for _ in range(50):
+        mark.reset()
+        mark.init_malmo()
+        newReq = req.get_request()
+        result, score = mark.optimal_retrieve(newReq)
+        reward = req.get_reward(newReq, result, score)
+        rewards.append(reward)
+    print(rewards)
