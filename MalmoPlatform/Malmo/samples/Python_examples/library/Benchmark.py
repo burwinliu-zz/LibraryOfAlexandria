@@ -1,5 +1,6 @@
 # Todo, create a benchmark with already present Librarian Methods copied over to see performance and compare
 #  (todo point 3) NOT WORKING YET BUT WILL BE CONTINUE TO PROGRESS ON THIS
+import copy
 import json
 import time
 from random import random
@@ -80,12 +81,7 @@ class BenchMark:
                         self._chestContents[pos][item].append(contents)
                         self._itemPos[item].add(pos)
         print(self._chestContents, self._itemPos)
-        self.default = [self._chestContents, self._itemPos]
-
-
-
-
-
+        self.default = copy.deepcopy([self._chestContents, self._itemPos])
 
     def GetMissionXML(self):
         leftX = self.obs_size * 2 + 2
@@ -213,8 +209,11 @@ class BenchMark:
                 pq_items = sorted([i for i in self._itemPos[item_id]])
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
+
                     toConsider = pq_items.pop()
-                    if random() < self._stochasticFailure[toConsider]:
+                    randomNum = random()
+
+                    if randomNum < self._stochasticFailure[toConsider]:
                         continue
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
@@ -226,7 +225,8 @@ class BenchMark:
                         result[item_id] = 0
                     result[item_id] += toRetrieve
                     num_retrieve -= toRetrieve
-
+                    if len(pq_items) == 0:
+                        print("hmm")
         action_plan = sorted(action_plan, key=lambda x: x[0])  # Sort by the first elemetn in the tuple
         score = 0
         for position, item, num_retrieve in action_plan:
@@ -338,7 +338,7 @@ class BenchMark:
 
     def reset(self):
         # Todo, according to self.distribution, distribute items in self._itemPos and self._chestContents
-        self._chestContents, self._itemPos = self.default
+        self._chestContents, self._itemPos = copy.deepcopy(self.default)
         self.moveToChest(-1, True)
         pass
 
