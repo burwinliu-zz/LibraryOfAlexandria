@@ -61,6 +61,7 @@ class Librarian(gym.Env):
         self.agent_position = 0
         self.episode_number = 0
         self.returns = []
+        self.steps = []
         self.inv_number = 0
         self.item = 0
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
@@ -208,6 +209,7 @@ class Librarian(gym.Env):
                         to_retrieve = self._requester.get_request()
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
                         reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                        self.steps.append(score)
             else:
                 # simulated inventory
                 for i, x in enumerate(self._placingInventory):
@@ -223,6 +225,7 @@ class Librarian(gym.Env):
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                    self.steps.append(score)
 
         if self._print_logs:
             print(self.obs)
@@ -478,9 +481,19 @@ class Librarian(gym.Env):
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
+            plt.clf()
+            plt.hist(self.steps[self.episode_number - 100 + 1:self.episode_number])
+            plt.title('Steps at ' + str(self.episode_number))
+            plt.ylabel('Occurance')
+            plt.xlabel('Reward')
+            plt.savefig(f"{self.directory}/step_histogram{str(self.episode_number)}.png")
             toSave = {}
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
                 for step, value in enumerate(self.returns[1:]):
+                    toSave[int(step)] = int(value)
+                json.dump(toSave, f)
+            with open(f"{self.directory}/stepData.json", 'w') as f:
+                for step, value in enumerate(self.steps[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             plt.clf()
@@ -578,9 +591,10 @@ if __name__ == '__main__':
         '_sleep_interval': .01,
         # For benchmarking, holding constant
         # Worse case scenario
-        # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
-        #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-        #                        0.01715813232043357, 0.30471561338685693]
+        # Todo Show all 3 cases then, and graph step time
+        '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+                               0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+                               0.01715813232043357, 0.30471561338685693]
         # Medium Case scenario
         # '_stochasticFailure': [0.010020667324609045, 0.7805985575324255, 0.06541976810436156, 0.618243240812539,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,

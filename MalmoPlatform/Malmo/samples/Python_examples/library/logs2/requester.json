@@ -1,0 +1,1 @@
+{"max_req": 5, "available": {"stone": 2, "diamond": 1, "glass": 1, "ladder": 2, "brick": 1, "dragon_egg": 6}, "_items": ["stone", "diamond", "glass", "ladder", "brick", "dragon_egg"], "probDist": [["stone", 0.13139577134949898], ["diamond", 0.18440184522962], ["glass", 0.4210955176847099], ["ladder", 0.4643753013059513], ["brick", 0.4693480911681148], ["dragon_egg", 1]]}
