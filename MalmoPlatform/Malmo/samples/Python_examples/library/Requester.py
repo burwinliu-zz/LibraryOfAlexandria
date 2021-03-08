@@ -79,10 +79,11 @@ class Requester:
                     break
         return request
 
-    def get_reward(self, request, response, steps):
+    def get_reward(self, request, response, steps, toPrint = False):
         # TODO add stochastic here for rewards
         reward = 0
-        print(f"REWARD REQUESTED FROM {request} {response} {steps}")
+        if toPrint:
+            print(f"REWARD REQUESTED FROM {request} {response} {steps}")
         for i, j in response.items():
             reward += self.passedReward[i](j)
             request[i] -= j

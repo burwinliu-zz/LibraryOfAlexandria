@@ -9,6 +9,12 @@ import gym, ray
 from gym.spaces import Discrete, Box
 import matplotlib.pyplot as plt
 from ray.rllib.agents import ppo
+import sys
+
+try:
+    import setup
+except ModuleNotFoundError:
+    print("no setup found, ignoring")
 
 try:
     from malmo import MalmoPython
@@ -97,7 +103,7 @@ class Librarian(gym.Env):
                 # Now we pop until we find
                 while num_retrieve > 0 and len(pq_items) > 0:
                     toConsider = pq_items.pop()
-                    if random() > self._stochasticFailure[toConsider]:
+                    if random() < self._stochasticFailure[toConsider]:
                         continue
                     chest = self._chestContents[toConsider]
                     if num_retrieve <= len(chest[item_id]):
@@ -557,7 +563,7 @@ if __name__ == '__main__':
         'max_per_chest': 3,
         'directoryName': log_number,
         '_display': False,
-        '_print_logs': True,
+        '_print_logs': False,
         '_sleep_interval': .01,
         '_stochasticFailure': [i * .1 for i in numpy.random.random(10)]
     }
@@ -574,11 +580,14 @@ if __name__ == '__main__':
     try:
         while True:
             i += 1
-            print(trainer.train())
+            print(trainer.train(), "TRAINING")
             if i % 100 == 0:
-                print("checkpoint saved at:", trainer.save())
+                print(f"LIBRARIAN SAVED AT: {trainer.save(log_number)}")
+                print(f"REQUESTER SAVED AT: {env['requester'].save_requester(log_number + '/requester.json')}")
+                # TODO, change this to save the failure to json file and loading there, or something along those lines
+                print(env['_stochasticFailure'])
     finally:
         print(f"LIBRARIAN SAVED AT: {trainer.save(log_number)}")
-        print(f"REQUESTER SAVED AT: {env['requester'].save_requester(log_number+'/requester.json')}")
+        print(f"REQUESTER SAVED AT: {env['requester'].save_requester(log_number + '/requester.json')}")
         # TODO, change this to save the failure to json file and loading there, or something along those lines
         print(env['_stochasticFailure'])
