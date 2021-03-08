@@ -546,6 +546,8 @@ if __name__ == '__main__':
     #   histograms, bin it every 10 cycles (or maybe 50?) -- saving data then mess with plot
     # Data + model to be saved --
     #
+    req_path = "C:\\Program Files\\Malmo\\Python_Examples\\logs0\\requester.json"
+    lib_path = "C:\\Program Files\\Malmo\\Python_Examples\\logs0\\checkpoint_0\\checkpoint-0"
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
     logs_count = 0
@@ -567,7 +569,11 @@ if __name__ == '__main__':
         '_sleep_interval': .01,
         '_stochasticFailure': [i * .1 for i in numpy.random.random(10)]
     }
-    env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
+    
+    if req_path == None:
+        env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
+    else:
+        env['requester'] = Requester(None, None, None, req_path)
 
     trainer = ppo.PPOTrainer(env=Librarian, config={
         'env_config': env,  # No environment parameters to configure
@@ -575,6 +581,9 @@ if __name__ == '__main__':
         'num_gpus': 0,  # We aren't using GPUs
         'num_workers': 0  # We aren't using parallelism
     })
+
+    if lib_path != None:
+        trainer.restore(lib_path)
 
     i = 0
     try:
