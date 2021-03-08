@@ -6,6 +6,7 @@ import time
 from random import random
 
 import matplotlib.pyplot as plt
+import numpy
 
 from Requester import Requester
 
@@ -169,14 +170,14 @@ class BenchMark:
         my_mission.requestVideo(800, 500)
         my_mission.setViewpoint(1)
 
-        max_retries = 3
+        max_retries = 9
         my_clients = MalmoPython.ClientPool()
         my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))  # add Minecraft machines here as available
 
         for retry in range(max_retries):
             try:
 
-                time.sleep(3)
+                time.sleep(1)
                 self.agent.startMission(my_mission, my_clients, my_mission_record, 0,
                                         'Librarian' + str(self.episode_number))
                 break
@@ -344,9 +345,9 @@ class BenchMark:
 if __name__ == "__main__":
     req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}, 2)
     # Percentage for failure to open in a chest
-    stochasticFailure = [0.024717291527897946, 0.010020667324609045, 0.05792171931559958, 0.06541976810436156,
+    stochasticFailure = [0.010020667324609045, 0.7805985575324255, 0.618243240812539, 0.06541976810436156,
                          0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-                         0.01715813232043357, 0.010745490849078655]
+                         0.01715813232043357, 0.30471561338685693]
 
     length = 0
     record = {}
@@ -365,11 +366,34 @@ if __name__ == "__main__":
     mark = BenchMark(probDist, stochasticFailure)
 
     rewards = []
-    for _ in range(50):
+    for _ in range(100):
         mark.reset()
         mark.init_malmo()
         newReq = req.get_request()
         result, score = mark.optimal_retrieve(newReq)
         reward = req.get_reward(newReq, result, score)
         rewards.append(reward)
-    print(rewards)
+    plt.clf()
+    plt.hist(rewards)
+    plt.title('Reward Distribution at Benchmark')
+    plt.ylabel('Occurance')
+    plt.xlabel('Reward')
+    plt.savefig(f"benchmark/reward_histogram.png")
+    toSave = {}
+    plt.clf()
+    log_freq = 10
+    box = numpy.ones(log_freq) / log_freq
+    returns_smooth = numpy.convolve(rewards[1:], box, mode='same')
+    plt.clf()
+    plt.plot(returns_smooth)
+    plt.title('Librarian')
+    plt.ylabel('Reward')
+    plt.xlabel('Episodes')
+    plt.savefig(f"benchmark/smooth_returns.png")
+    total = 0
+    with open(f"benchmark/returnsfinalpart.json", 'w') as f:
+        for step, value in enumerate(rewards):
+            toSave[int(step)] = int(value)
+            total += int(value)
+        json.dump(toSave, f)
+    print(f"MEAN IS {total/len(rewards)}")

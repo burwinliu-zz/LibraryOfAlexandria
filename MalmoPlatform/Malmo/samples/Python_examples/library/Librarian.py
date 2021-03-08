@@ -1,6 +1,6 @@
 import json
 import time
-from random import random
+from random import random, randint
 
 import numpy
 import os
@@ -25,6 +25,7 @@ import matplotlib
 from Requester import Requester
 
 matplotlib.use('TKAgg')
+
 
 class Librarian(gym.Env):
     def __init__(self, env_config):
@@ -162,7 +163,7 @@ class Librarian(gym.Env):
             time.sleep(self._sleep_interval)
         self.moveToChest(action)
         self.openChest()
-    
+
         placed = False
         # new observation
         # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
@@ -183,10 +184,10 @@ class Librarian(gym.Env):
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
                 placed = True
                 break
-        
+
         if self._display:
             time.sleep(1)
-           
+
         self.closeChest()
         done = False
         if placed:
@@ -223,7 +224,6 @@ class Librarian(gym.Env):
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
 
-
         if self._print_logs:
             print(self.obs)
         if done:
@@ -255,7 +255,7 @@ class Librarian(gym.Env):
         for items in self._env_items:
             for x in range(self._env_items[items]):
                 item += f"<DrawItem x='0' y='3' z='1' type='{items}' />"
-        chests = f"<DrawBlock x='0' y='2' z='1' type='air' />" +\
+        chests = f"<DrawBlock x='0' y='2' z='1' type='air' />" + \
                  f"<DrawBlock x='0' y='2' z='1' type='chest' />"
         for chest_num in range(self.obs_size):
             chests += f"<DrawBlock x='{chest_num * 2 + 2}' y='2' z='1' type='air' />"
@@ -473,8 +473,8 @@ class Librarian(gym.Env):
     def log(self):
         if self.episode_number % 100 == 0:
             plt.clf()
-            plt.hist(self.returns[self.episode_number-100 + 1:self.episode_number])
-            plt.title('Reward Distribution at ' + str(self.episode_number) )
+            plt.hist(self.returns[self.episode_number - 100 + 1:self.episode_number])
+            plt.title('Reward Distribution at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
@@ -485,7 +485,7 @@ class Librarian(gym.Env):
                 json.dump(toSave, f)
             plt.clf()
             plt.bar(self.action_tracker.keys(), self.action_tracker.values())
-            plt.title('Action Distribution at ' + str(self.episode_number) )
+            plt.title('Action Distribution at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Action')
             plt.savefig(f"{self.directory}/action_barchart{str(self.episode_number)}.png")
@@ -499,7 +499,7 @@ class Librarian(gym.Env):
         plt.ylabel('Reward')
         plt.xlabel('Episodes')
         plt.savefig(f"{self.directory}/smooth_returns.png")
-       
+
     def init_malmo(self):
         """
         Initialize new malmo mission.
@@ -539,24 +539,33 @@ class Librarian(gym.Env):
 
 if __name__ == '__main__':
     # ray.shutdown()
-    # ray.init()
+    ray.init()
     # Max request items, valid items, difficulty level
     # TODO: Create a benchmark with a "simple method" by averaging all items and showing how it doesnt work
     # Scatterplot, *preferred*  line as moving average  -- (10 cycles and find average) ,
     #   histograms, bin it every 10 cycles (or maybe 50?) -- saving data then mess with plot
     # Data + model to be saved --
     #
-    req_path = "C:\\Program Files\\Malmo\\Python_Examples\\logs0\\requester.json"
-    lib_path = "C:\\Program Files\\Malmo\\Python_Examples\\logs0\\checkpoint_0\\checkpoint-0"
+    # req_path = "PATHTO\\library\\logs2\\requester.json "
+    # lib_path = "PATHTO\\library\\logs2\\checkpoint_1102\\checkpoint-1102"
+    req_path = None
+    lib_path = None
+    log_number = ""
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
-    logs_count = 0
-    for files in os.listdir():
-        if os.path.isdir(files) and 'logs' in files:
-            logs_count += 1
-    log_number = 'logs' + str(logs_count)
-    os.mkdir(log_number)
-
+    if log_number == "":
+        logs_count = 0
+        for files in os.listdir():
+            if os.path.isdir(files) and 'logs' in files:
+                logs_count += 1
+        log_number = 'logs' + str(logs_count)
+    try:
+        os.mkdir(log_number)
+    except FileExistsError:
+        print("RESUMING RUN WELCOME BACK")
+    # _stochasticFailure = [i * .1 for i in numpy.random.random(10)]
+    # for i in range(3):
+    #     _stochasticFailure[randint(0, 9)] /= .1
     env = {
         'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
         'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},
@@ -567,10 +576,24 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': False,
         '_sleep_interval': .01,
-        '_stochasticFailure': [i * .1 for i in numpy.random.random(10)]
+        # For benchmarking, holding constant
+        # Worse case scenario
+        # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+        #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+        #                        0.01715813232043357, 0.30471561338685693]
+        # Medium Case scenario
+        # '_stochasticFailure': [0.010020667324609045, 0.7805985575324255, 0.06541976810436156, 0.618243240812539,
+        #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+        #                        0.01715813232043357, 0.30471561338685693],
+        # Best Case scenario
+        # '_stochasticFailure': [0.010020667324609045, 0.06541976810436156, 0.014450713025995533,
+        #                        0.05572127466323378, 0.04338720075449303, 0.007890235534481071, 0.01715813232043357,
+        #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+        # For true randomness
+        # '_stochasticFailure': _stochasticFailure
     }
-    
-    if req_path == None:
+
+    if req_path is None:
         env['requester'] = Requester(MAX_ITEMS, env['items'], COMPLEXITY_LEVEL)
     else:
         env['requester'] = Requester(None, None, None, req_path)
@@ -582,7 +605,7 @@ if __name__ == '__main__':
         'num_workers': 0  # We aren't using parallelism
     })
 
-    if lib_path != None:
+    if lib_path is not None:
         trainer.restore(lib_path)
 
     i = 0
