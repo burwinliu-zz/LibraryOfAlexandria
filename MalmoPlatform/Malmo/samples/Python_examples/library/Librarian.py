@@ -226,7 +226,8 @@ class Librarian(gym.Env):
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
                     self.steps.append(score)
-
+        else:
+            return self.obs.flatten(), -100, done, dict()
         if self._print_logs:
             print(self.obs)
         if done:
