@@ -24,7 +24,10 @@ class Requester:
                 self._items = data["_items"]
                 self.probDist = data["probDist"]
             self.passedReward = {i: lambda x: 0 for i in self._items}
-            self.failedReward = {i: lambda x: x * -100 for i in self._items}
+
+            # TODO Number of times x item failed **(positive score), max reward of 0, and auto 0 if it fails to retrieve
+
+            self.failedReward = {i: lambda x: x * -10 for i in self._items}
             self.stepWeights = lambda x: x * -1
             return
 
@@ -39,7 +42,7 @@ class Requester:
             self.probDist = [(self._items[random.randint(0, len(available_input)-1)], 1)]
 
         self.passedReward = {i: lambda x: 0 for i in self._items}
-        self.failedReward = {i: lambda x: x * -100 for i in self._items}
+        self.failedReward = {i: lambda x: x * -10 for i in self._items}
         self.stepWeights = lambda x: x * -1
         # Random numbers, probability get_request, get_reward
         if complexity_level == 1:

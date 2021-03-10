@@ -60,7 +60,7 @@ class Librarian(gym.Env):
         self._episode_score = 0
         self.agent_position = 0
         self.episode_number = 0
-        self.returns = []
+        self.returns = env_config['returns']
         self.steps = []
         self.inv_number = 0
         self.item = 0
@@ -148,6 +148,7 @@ class Librarian(gym.Env):
             reward: <int> reward from taking action
             done: <bool> indicates terminal state
             info: <dict> dictionary of extra information
+        TODO Add step counter, after N amount of steps, (100) if it fails to place, then provide negative rewards 50
         """
         # item to be placed
         if action not in self.action_tracker:
@@ -227,7 +228,7 @@ class Librarian(gym.Env):
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
                     self.steps.append(score)
         else:
-            return self.obs.flatten(), -100, done, dict()
+            return self.obs.flatten(), -5, done, dict()
         if self._print_logs:
             print(self.obs)
         if done:
@@ -396,7 +397,6 @@ class Librarian(gym.Env):
         """
             query = dict{ key = itemId: value = number to retrieve }
         """
-        # TODO Fix this to fit with the Librarian Class
         chest = self._chestContents[self.agent_position - 1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
@@ -475,6 +475,8 @@ class Librarian(gym.Env):
         return self.obs.flatten()
 
     def log(self):
+        # Todo, store steps taken over the whole time, number of invalid actions taken, associate item
+        #   with placement position
         if self.episode_number % 100 == 0:
             plt.clf()
             plt.hist(self.returns[self.episode_number - 100 + 1:self.episode_number])
@@ -513,6 +515,15 @@ class Librarian(gym.Env):
         plt.ylabel('Reward')
         plt.xlabel('Episodes')
         plt.savefig(f"{self.directory}/smooth_returns.png")
+
+        box = numpy.ones(self._log_freq) / self._log_freq
+        steps_smooth = numpy.convolve(self.steps[1:], box, mode='same')
+        plt.clf()
+        plt.plot(steps_smooth)
+        plt.title('Librarian')
+        plt.ylabel('Steps')
+        plt.xlabel('Episodes')
+        plt.savefig(f"{self.directory}/steps_smooth.png")
 
     def init_malmo(self):
         """
@@ -562,8 +573,12 @@ if __name__ == '__main__':
     #
     # req_path = "PATHTO\\library\\logs2\\requester.json "
     # lib_path = "PATHTO\\library\\logs2\\checkpoint_1102\\checkpoint-1102"
+    # return_path = "PATHTO\\library\\logs2\\returnsfinalpart.json "
+    # step_path = "PATHTO\\library\\logs2\\stepData.json "
     req_path = None
     lib_path = None
+    return_path = None
+    step_path = None
     log_number = ""
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
@@ -580,6 +595,12 @@ if __name__ == '__main__':
     # _stochasticFailure = [i * .1 for i in numpy.random.random(10)]
     # for i in range(3):
     #     _stochasticFailure[randint(0, 9)] /= .1
+    if return_path is not None:
+        with open(return_path) as json_file:
+            returnData = [i for i in json.load(json_file).values()]
+    if step_path is not None:
+        with open(step_path) as json_file:
+            stepData = [i for i in json.load(json_file).values()]
     env = {
         'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
         'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},
@@ -590,12 +611,15 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': False,
         '_sleep_interval': .01,
+        'returns': returnData,
+        'steps': stepData,
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
-        '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
-                               0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-                               0.01715813232043357, 0.30471561338685693]
+        '_stochasticFailure': [0] * 10
+        # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+        #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+        #                        0.01715813232043357, 0.30471561338685693]
         # Medium Case scenario
         # '_stochasticFailure': [0.010020667324609045, 0.7805985575324255, 0.06541976810436156, 0.618243240812539,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
