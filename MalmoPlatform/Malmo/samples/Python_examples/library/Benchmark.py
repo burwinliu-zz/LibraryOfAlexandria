@@ -391,6 +391,7 @@ if __name__ == "__main__":
     plt.xlabel('Episodes')
     plt.savefig(f"benchmark/smooth_returns.png")
     total = 0
+    # Number of steps taken with uniform distribution, with greedy
     with open(f"benchmark/returnsfinalpart.json", 'w') as f:
         for step, value in enumerate(rewards):
             toSave[int(step)] = int(value)

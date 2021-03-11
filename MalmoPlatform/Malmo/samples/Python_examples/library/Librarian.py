@@ -233,9 +233,9 @@ class Librarian(gym.Env):
             print(self.obs)
         if done:
             # end malmo mission
-            self.moveToChest(-1, True)
+            self.moveToChest(-1)
             self._episode_score += reward
-            done = False
+            done = not self._display
             while not done:
                 world_state = self.agent.getWorldState()
                 for error in world_state.errors:
@@ -326,6 +326,8 @@ class Librarian(gym.Env):
                         </Mission>'''
 
     def _updateObs(self):
+        if not self._display:
+            return
         toSleep = .1
         self.world_obs = None
         while self.world_obs is None:
@@ -428,7 +430,8 @@ class Librarian(gym.Env):
         """
         # Reset Malmo
         self.episode_number += 1
-        world_state = self.init_malmo()
+        if self._display:
+            self.init_malmo()
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.returns.append(self._episode_score)
@@ -440,26 +443,28 @@ class Librarian(gym.Env):
         self.agent_position = 0
         self._placingInventory = []
         self._updateObs()
-        for x in self.world_obs:
-            if "Inventory" in x and "item" in x:
-                if self._display:
-                    if self.world_obs[x] != 'air':
-                        self.inv_number = int(x.split("_")[1])
-                        self.item = self.map[self.world_obs[x]]
-                        break
-                else:
-                    if self.world_obs[x] in self.map:
-                        self._placingInventory.append(self.map[self.world_obs[x]])
+        if self._display:
+            for x in self.world_obs:
+                if "Inventory" in x and "item" in x:
+                    if self._display:
+                        if self.world_obs[x] != 'air':
+                            self.inv_number = int(x.split("_")[1])
+                            self.item = self.map[self.world_obs[x]]
+                            break
                     else:
-                        self._placingInventory.append(-1)
-        if not self._display:
-            for i, x in enumerate(self._placingInventory):
-                if x != -1:
-                    self.item = x
-                    self.inv_number = i
-                    self._placingInventory[i] = -1
-                    break
-
+                        if self.world_obs[x] in self.map:
+                            self._placingInventory.append(self.map[self.world_obs[x]])
+                        else:
+                            self._placingInventory.append(-1)
+        else:
+            self._placingInventory = [-1] * 40
+            pos = 0
+            for i in self._env_items:
+                toPlace = self._env_items[i]
+                while toPlace > 0:
+                    self._placingInventory[pos] = self.map[i]
+                    toPlace -= 64
+                    pos += 1
         self._itemPos = {}
         for items in self.map:
             self._itemPos[items] = set()
@@ -488,14 +493,16 @@ class Librarian(gym.Env):
             plt.hist(self.steps[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Steps at ' + str(self.episode_number))
             plt.ylabel('Occurance')
-            plt.xlabel('Reward')
+            plt.xlabel('Steps')
             plt.savefig(f"{self.directory}/step_histogram{str(self.episode_number)}.png")
-            toSave = {}
+
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
+                toSave = {}
                 for step, value in enumerate(self.returns[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             with open(f"{self.directory}/stepData.json", 'w') as f:
+                toSave = {}
                 for step, value in enumerate(self.steps[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
@@ -529,6 +536,8 @@ class Librarian(gym.Env):
         """
         Initialize new malmo mission.
         """
+        if not self._display:
+            return
         my_mission = MalmoPython.MissionSpec(self.GetMissionXML(), True)
         my_mission_record = MalmoPython.MissionRecordSpec()
         my_mission.requestVideo(800, 500)
@@ -595,6 +604,8 @@ if __name__ == '__main__':
     # _stochasticFailure = [i * .1 for i in numpy.random.random(10)]
     # for i in range(3):
     #     _stochasticFailure[randint(0, 9)] /= .1
+    returnData = []
+    stepData = []
     if return_path is not None:
         with open(return_path) as json_file:
             returnData = [i for i in json.load(json_file).values()]
@@ -616,6 +627,7 @@ if __name__ == '__main__':
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
+        # 0 reward fails to retrieve items; + retrieving items -factor (num of steps)
         '_stochasticFailure': [0] * 10
         # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
