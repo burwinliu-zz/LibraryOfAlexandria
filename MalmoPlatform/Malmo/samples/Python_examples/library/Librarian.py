@@ -47,6 +47,7 @@ class Librarian(gym.Env):
         self._itemPos = {}
         self._placingInventory = []
         self._chestContents = []
+
         # Ideas: record next open slot per chest
         self._chestPosition = []
         # Percentage for failure to open in a chest
@@ -60,8 +61,13 @@ class Librarian(gym.Env):
         self._episode_score = 0
         self.agent_position = 0
         self.episode_number = 0
-        self.returns = []
-        self.steps = []
+
+        # Data saves
+        self.returnData = env_config['returnData']
+        self.stepData = env_config['stepData']
+        self.itemData = env_config['itemData']
+        self.failureData = env_config['failureData']
+
         self.inv_number = 0
         self.item = 0
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
@@ -149,6 +155,7 @@ class Librarian(gym.Env):
             reward: <int> reward from taking action
             done: <bool> indicates terminal state
             info: <dict> dictionary of extra information
+        TODO Add step counter, after N amount of steps, (100) if it fails to place, then provide negative rewards 50
         """
         # item to be placed
         
@@ -170,11 +177,6 @@ class Librarian(gym.Env):
 
         placed = False
         # new observation
-        # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
-        #  called, place once.
-        #   IF PLACED ALL ITEMS, then retrieve and calculate rewards based on ONLY if the retrieval is done
-        #   ADD MORE STOCHASITICITY IN CHESTS _> bad movement to "wrong" place -- agent has to be more robust with
-        #       placement
         for i, x in enumerate(self.obs[self.agent_position]):
             if not any(self.obs[self.agent_position][i]):
                 if self._print_logs:
@@ -213,8 +215,9 @@ class Librarian(gym.Env):
                         self.moveToChest(0)
                         to_retrieve = self._requester.get_request()
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                        reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                        self.steps.append(score)
+                        reward, failed = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                        self.stepData.append(score)
+                        self.failureData.append(failed)
             else:
                 # simulated inventory
                 for i, x in enumerate(self._placingInventory):
@@ -229,17 +232,18 @@ class Librarian(gym.Env):
                     self.moveToChest(0)
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                    reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                    self.steps.append(score)
+                    reward, failed = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                    self.stepData.append(score)
+                    self.failureData.append(failed)
         else:
-            return self.obs.flatten(), -100, done, dict()
+            return self.obs.flatten(), -5, done, dict()
         if self._print_logs:
             print(self.obs)
         if done:
             # end malmo mission
-            self.moveToChest(-1, True)
+            self.moveToChest(-1)
             self._episode_score += reward
-            done = False
+            done = not self._display
             while not done:
                 world_state = self.agent.getWorldState()
                 for error in world_state.errors:
@@ -330,6 +334,8 @@ class Librarian(gym.Env):
                         </Mission>'''
 
     def _updateObs(self):
+        if not self._display:
+            return
         toSleep = .1
         self.world_obs = None
         while self.world_obs is None:
@@ -401,7 +407,6 @@ class Librarian(gym.Env):
         """
             query = dict{ key = itemId: value = number to retrieve }
         """
-        # TODO Fix this to fit with the Librarian Class
         chest = self._chestContents[self.agent_position - 1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
@@ -433,38 +438,41 @@ class Librarian(gym.Env):
         """
         # Reset Malmo
         self.episode_number += 1
-        world_state = self.init_malmo()
+        if self._display:
+            self.init_malmo()
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
-        self.returns.append(self._episode_score)
+        self.returnData.append(self._episode_score)
         if self._print_logs:
-            print(self.returns)
+            print(self.returnData)
         if self.episode_number % self._log_freq == 0:
             self.log()
         self._episode_score = 0
         self.agent_position = 0
         self._placingInventory = []
         self._updateObs()
-        for x in self.world_obs:
-            if "Inventory" in x and "item" in x:
-                if self._display:
-                    if self.world_obs[x] != 'air':
-                        self.inv_number = int(x.split("_")[1])
-                        self.item = self.map[self.world_obs[x]]
-                        break
-                else:
-                    if self.world_obs[x] in self.map:
-                        self._placingInventory.append(self.map[self.world_obs[x]])
+        if self._display:
+            for x in self.world_obs:
+                if "Inventory" in x and "item" in x:
+                    if self._display:
+                        if self.world_obs[x] != 'air':
+                            self.inv_number = int(x.split("_")[1])
+                            self.item = self.map[self.world_obs[x]]
+                            break
                     else:
-                        self._placingInventory.append(-1)
-        if not self._display:
-            for i, x in enumerate(self._placingInventory):
-                if x != -1:
-                    self.item = x
-                    self.inv_number = i
-                    self._placingInventory[i] = -1
-                    break
-
+                        if self.world_obs[x] in self.map:
+                            self._placingInventory.append(self.map[self.world_obs[x]])
+                        else:
+                            self._placingInventory.append(-1)
+        else:
+            self._placingInventory = [-1] * 40
+            pos = 0
+            for i in self._env_items:
+                toPlace = self._env_items[i]
+                while toPlace > 0:
+                    self._placingInventory[pos] = self.map[i]
+                    toPlace -= 64
+                    pos += 1
         self._itemPos = {}
         for items in self.map:
             self._itemPos[items] = set()
@@ -481,28 +489,41 @@ class Librarian(gym.Env):
         return self.obs.flatten()
 
     def log(self):
+        # Todo, store steps taken over the whole time, number of invalid actions taken, associate item
+        #   with placement position
+        # TODO Graph failureData, itemDistribution per hundered, moving averages
         if self.episode_number % 100 == 0:
             plt.clf()
-            plt.hist(self.returns[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.returnData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Reward Distribution at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
+
             plt.clf()
-            plt.hist(self.steps[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.stepData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Steps at ' + str(self.episode_number))
             plt.ylabel('Occurance')
-            plt.xlabel('Reward')
+            plt.xlabel('Steps')
             plt.savefig(f"{self.directory}/step_histogram{str(self.episode_number)}.png")
-            toSave = {}
+
+            # Save data
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
-                for step, value in enumerate(self.returns[1:]):
+                toSave = {}
+                for step, value in enumerate(self.returnData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             with open(f"{self.directory}/stepData.json", 'w') as f:
-                for step, value in enumerate(self.steps[1:]):
+                toSave = {}
+                for step, value in enumerate(self.stepData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
+            with open(f"{self.directory}/failureData.json", 'w') as f:
+                toSave = {}
+                for step, value in enumerate(self.failureData[1:]):
+                    toSave[int(step)] = int(value)
+                json.dump(toSave, f)
+
             plt.clf()
             plt.bar(self.action_tracker.keys(), self.action_tracker.values())
             plt.title('Action Distribution at ' + str(self.episode_number))
@@ -522,7 +543,7 @@ class Librarian(gym.Env):
 
 
         box = numpy.ones(self._log_freq) / self._log_freq
-        returns_smooth = numpy.convolve(self.returns[1:], box, mode='same')
+        returns_smooth = numpy.convolve(self.returnData[1:], box, mode='same')
         plt.clf()
         plt.plot(returns_smooth)
         plt.title('Librarian')
@@ -530,10 +551,29 @@ class Librarian(gym.Env):
         plt.xlabel('Episodes')
         plt.savefig(f"{self.directory}/smooth_returns.png")
 
+        box = numpy.ones(self._log_freq) / self._log_freq
+        steps_smooth = numpy.convolve(self.stepData[1:], box, mode='same')
+        plt.clf()
+        plt.plot(steps_smooth)
+        plt.title('Librarian')
+        plt.ylabel('Steps')
+        plt.xlabel('Episodes')
+        plt.savefig(f"{self.directory}/steps_smooth.png")
+
+        plt.clf()
+        print(failureData)
+        plt.plot(self.failureData)
+        plt.title('Librarian')
+        plt.ylabel('Failures')
+        plt.xlabel('Episodes')
+        plt.savefig(f"{self.directory}/failure_data.png")
+
     def init_malmo(self):
         """
         Initialize new malmo mission.
         """
+        if not self._display:
+            return
         my_mission = MalmoPython.MissionSpec(self.GetMissionXML(), True)
         my_mission_record = MalmoPython.MissionRecordSpec()
         my_mission.requestVideo(800, 500)
@@ -576,10 +616,20 @@ if __name__ == '__main__':
     #   histograms, bin it every 10 cycles (or maybe 50?) -- saving data then mess with plot
     # Data + model to be saved --
     #
+    script_dir = os.path.dirname(__file__)
+
     # req_path = "PATHTO\\library\\logs2\\requester.json "
     # lib_path = "PATHTO\\library\\logs2\\checkpoint_1102\\checkpoint-1102"
-    req_path = None
+    # return_path = "PATHTO\\library\\logs2\\returnsfinalpart.json "
+    # step_path = "PATHTO\\library\\logs2\\stepData.json "
+
+    req_path = os.path.join(script_dir, "requester.json")
+    # req_path = None
     lib_path = None
+    return_path = None
+    step_path = None
+    failure_path = None
+
     log_number = ""
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
@@ -596,6 +646,19 @@ if __name__ == '__main__':
     # _stochasticFailure = [i * .1 for i in numpy.random.random(10)]
     # for i in range(3):
     #     _stochasticFailure[randint(0, 9)] /= .1
+    returnData = []
+    stepData = []
+    itemData = {}
+    failureData = []
+    if return_path is not None:
+        with open(return_path) as json_file:
+            returnData = [i for i in json.load(json_file).values()]
+    if step_path is not None:
+        with open(step_path) as json_file:
+            stepData = [i for i in json.load(json_file).values()]
+    if failure_path is not None:
+        with open(failure_path) as json_file:
+            failureData = [i for i in json.load(json_file).values()]
     env = {
         'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
         'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},
@@ -605,13 +668,25 @@ if __name__ == '__main__':
         'directoryName': log_number,
         '_display': False,
         '_print_logs': False,
-        '_sleep_interval': .01,
+        '_sleep_interval': 0,
+        'returnData': returnData,
+        'stepData': stepData,
+        'itemData': itemData,
+        'failureData': failureData,
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
+<<<<<<< HEAD
         # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
         #                        0.01715813232043357, 0.30471561338685693]
+=======
+        # 0 reward fails to retrieve items; + retrieving items -factor (num of steps)
+        # '_stochasticFailure': [0] * 10
+        '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+                               0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+                               0.01715813232043357, 0.30471561338685693]
+>>>>>>> fbe2ca1077ae7008380fa47650680e6e27c04bb0
         # Medium Case scenario
         # '_stochasticFailure': [0.010020667324609045, 0.7805985575324255, 0.06541976810436156, 0.618243240812539,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,

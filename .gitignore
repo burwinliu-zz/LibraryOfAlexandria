@@ -13,4 +13,6 @@ MalmoPlatform/Malmo/*
 MalmoPlatform/Malmo/samples/*
 !MalmoPlatform/Malmo/samples/Python_examples/
 MalmoPlatform/Malmo/samples/Python_examples/*
-!MalmoPlatform/Malmo/samples/Python_examples/library/*
+!MalmoPlatform/Malmo/samples/Python_examples/library/benchmarkGBest
+!MalmoPlatform/Malmo/samples/Python_examples/library/benchmarkGMedium
+!MalmoPlatform/Malmo/samples/Python_examples/library/benchmarkGWorst
