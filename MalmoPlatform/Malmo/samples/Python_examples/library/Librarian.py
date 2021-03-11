@@ -493,6 +493,7 @@ class Librarian(gym.Env):
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
+
             plt.clf()
             plt.hist(self.stepData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Steps at ' + str(self.episode_number))
@@ -500,6 +501,7 @@ class Librarian(gym.Env):
             plt.xlabel('Steps')
             plt.savefig(f"{self.directory}/step_histogram{str(self.episode_number)}.png")
 
+            # Save data
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
                 toSave = {}
                 for step, value in enumerate(self.returnData[1:]):
@@ -510,6 +512,12 @@ class Librarian(gym.Env):
                 for step, value in enumerate(self.stepData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
+            with open(f"{self.directory}/failureData.json", 'w') as f:
+                toSave = {}
+                for step, value in enumerate(self.failureData[1:]):
+                    toSave[int(step)] = int(value)
+                json.dump(toSave, f)
+
             plt.clf()
             plt.bar(self.action_tracker.keys(), self.action_tracker.values())
             plt.title('Action Distribution at ' + str(self.episode_number))
@@ -535,6 +543,13 @@ class Librarian(gym.Env):
         plt.ylabel('Steps')
         plt.xlabel('Episodes')
         plt.savefig(f"{self.directory}/steps_smooth.png")
+
+        plt.clf()
+        plt.plot(failureData)
+        plt.title('Librarian')
+        plt.ylabel('Failures')
+        plt.xlabel('Episodes')
+        plt.savefig(f"{self.directory}/failure_data.png")
 
     def init_malmo(self):
         """
@@ -640,6 +655,7 @@ if __name__ == '__main__':
         'returnData': returnData,
         'stepData': stepData,
         'itemData': itemData,
+        'failureData': failureData,
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
