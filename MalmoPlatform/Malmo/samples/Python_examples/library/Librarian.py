@@ -60,8 +60,12 @@ class Librarian(gym.Env):
         self._episode_score = 0
         self.agent_position = 0
         self.episode_number = 0
-        self.returns = env_config['returns']
-        self.steps = []
+
+        # Data saves
+        self.returnsData = env_config['returnsData']
+        self.stepsData = env_config['stepsData']
+        self.itemData = env_config['itemData']
+
         self.inv_number = 0
         self.item = 0
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
@@ -168,11 +172,6 @@ class Librarian(gym.Env):
 
         placed = False
         # new observation
-        # TODO ask him about this one Do not want to be doing entire episode in one function -- each time step is
-        #  called, place once.
-        #   IF PLACED ALL ITEMS, then retrieve and calculate rewards based on ONLY if the retrieval is done
-        #   ADD MORE STOCHASITICITY IN CHESTS _> bad movement to "wrong" place -- agent has to be more robust with
-        #       placement
         for i, x in enumerate(self.obs[self.agent_position]):
             if not any(self.obs[self.agent_position][i]):
                 if self._print_logs:
@@ -210,7 +209,7 @@ class Librarian(gym.Env):
                         to_retrieve = self._requester.get_request()
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
                         reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                        self.steps.append(score)
+                        self.stepsData.append(score)
             else:
                 # simulated inventory
                 for i, x in enumerate(self._placingInventory):
@@ -226,7 +225,7 @@ class Librarian(gym.Env):
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                    self.steps.append(score)
+                    self.stepsData.append(score)
         else:
             return self.obs.flatten(), -5, done, dict()
         if self._print_logs:
@@ -434,9 +433,9 @@ class Librarian(gym.Env):
             self.init_malmo()
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
-        self.returns.append(self._episode_score)
+        self.returnsData.append(self._episode_score)
         if self._print_logs:
-            print(self.returns)
+            print(self.returnsData)
         if self.episode_number % self._log_freq == 0:
             self.log()
         self._episode_score = 0
@@ -484,13 +483,13 @@ class Librarian(gym.Env):
         #   with placement position
         if self.episode_number % 100 == 0:
             plt.clf()
-            plt.hist(self.returns[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.returnsData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Reward Distribution at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
             plt.clf()
-            plt.hist(self.steps[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.stepsData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Steps at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Steps')
@@ -498,12 +497,12 @@ class Librarian(gym.Env):
 
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
                 toSave = {}
-                for step, value in enumerate(self.returns[1:]):
+                for step, value in enumerate(self.returnsData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             with open(f"{self.directory}/stepData.json", 'w') as f:
                 toSave = {}
-                for step, value in enumerate(self.steps[1:]):
+                for step, value in enumerate(self.stepsData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             plt.clf()
@@ -515,7 +514,7 @@ class Librarian(gym.Env):
             self.action_tracker = {}
 
         box = numpy.ones(self._log_freq) / self._log_freq
-        returns_smooth = numpy.convolve(self.returns[1:], box, mode='same')
+        returns_smooth = numpy.convolve(self.returnsData[1:], box, mode='same')
         plt.clf()
         plt.plot(returns_smooth)
         plt.title('Librarian')
@@ -524,7 +523,7 @@ class Librarian(gym.Env):
         plt.savefig(f"{self.directory}/smooth_returns.png")
 
         box = numpy.ones(self._log_freq) / self._log_freq
-        steps_smooth = numpy.convolve(self.steps[1:], box, mode='same')
+        steps_smooth = numpy.convolve(self.stepsData[1:], box, mode='same')
         plt.clf()
         plt.plot(steps_smooth)
         plt.title('Librarian')
@@ -606,6 +605,7 @@ if __name__ == '__main__':
     #     _stochasticFailure[randint(0, 9)] /= .1
     returnData = []
     stepData = []
+    itemData = {}
     if return_path is not None:
         with open(return_path) as json_file:
             returnData = [i for i in json.load(json_file).values()]
@@ -622,8 +622,9 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': False,
         '_sleep_interval': 0,
-        'returns': returnData,
-        'steps': stepData,
+        'returnsData': returnData,
+        'stepsData': stepData,
+        'itemsData': itemData,
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
