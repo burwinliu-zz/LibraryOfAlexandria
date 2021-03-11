@@ -209,7 +209,7 @@ class Librarian(gym.Env):
                         to_retrieve = self._requester.get_request()
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
                         reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                        self.stepsData.append(score)
+                        self.stepData.append(score)
             else:
                 # simulated inventory
                 for i, x in enumerate(self._placingInventory):
@@ -225,7 +225,7 @@ class Librarian(gym.Env):
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
                     reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
-                    self.stepsData.append(score)
+                    self.stepData.append(score)
         else:
             return self.obs.flatten(), -5, done, dict()
         if self._print_logs:
@@ -433,9 +433,9 @@ class Librarian(gym.Env):
             self.init_malmo()
         time.sleep(1)
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
-        self.returnsData.append(self._episode_score)
+        self.returnData.append(self._episode_score)
         if self._print_logs:
-            print(self.returnsData)
+            print(self.returnData)
         if self.episode_number % self._log_freq == 0:
             self.log()
         self._episode_score = 0
@@ -483,13 +483,13 @@ class Librarian(gym.Env):
         #   with placement position
         if self.episode_number % 100 == 0:
             plt.clf()
-            plt.hist(self.returnsData[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.returnData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Reward Distribution at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Reward')
             plt.savefig(f"{self.directory}/reward_histogram{str(self.episode_number)}.png")
             plt.clf()
-            plt.hist(self.stepsData[self.episode_number - 100 + 1:self.episode_number])
+            plt.hist(self.stepData[self.episode_number - 100 + 1:self.episode_number])
             plt.title('Steps at ' + str(self.episode_number))
             plt.ylabel('Occurance')
             plt.xlabel('Steps')
@@ -497,12 +497,12 @@ class Librarian(gym.Env):
 
             with open(f"{self.directory}/returnsfinalpart.json", 'w') as f:
                 toSave = {}
-                for step, value in enumerate(self.returnsData[1:]):
+                for step, value in enumerate(self.returnData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             with open(f"{self.directory}/stepData.json", 'w') as f:
                 toSave = {}
-                for step, value in enumerate(self.stepsData[1:]):
+                for step, value in enumerate(self.stepData[1:]):
                     toSave[int(step)] = int(value)
                 json.dump(toSave, f)
             plt.clf()
@@ -514,7 +514,7 @@ class Librarian(gym.Env):
             self.action_tracker = {}
 
         box = numpy.ones(self._log_freq) / self._log_freq
-        returns_smooth = numpy.convolve(self.returnsData[1:], box, mode='same')
+        returns_smooth = numpy.convolve(self.returnData[1:], box, mode='same')
         plt.clf()
         plt.plot(returns_smooth)
         plt.title('Librarian')
@@ -523,7 +523,7 @@ class Librarian(gym.Env):
         plt.savefig(f"{self.directory}/smooth_returns.png")
 
         box = numpy.ones(self._log_freq) / self._log_freq
-        steps_smooth = numpy.convolve(self.stepsData[1:], box, mode='same')
+        steps_smooth = numpy.convolve(self.stepData[1:], box, mode='same')
         plt.clf()
         plt.plot(steps_smooth)
         plt.title('Librarian')
