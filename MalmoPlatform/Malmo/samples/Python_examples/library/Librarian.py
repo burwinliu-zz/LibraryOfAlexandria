@@ -47,6 +47,7 @@ class Librarian(gym.Env):
         self._itemPos = {}
         self._placingInventory = []
         self._chestContents = []
+
         # Ideas: record next open slot per chest
         self._chestPosition = []
         # Percentage for failure to open in a chest
@@ -65,6 +66,7 @@ class Librarian(gym.Env):
         self.returnData = env_config['returnData']
         self.stepData = env_config['stepData']
         self.itemData = env_config['itemData']
+        self.failureData = env_config['failureData']
 
         self.inv_number = 0
         self.item = 0
@@ -208,8 +210,9 @@ class Librarian(gym.Env):
                         self.moveToChest(0)
                         to_retrieve = self._requester.get_request()
                         retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                        reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                        reward, failed = self._requester.get_reward(to_retrieve, retrieved_items, score)
                         self.stepData.append(score)
+                        self.failureData.append(failed)
             else:
                 # simulated inventory
                 for i, x in enumerate(self._placingInventory):
@@ -224,8 +227,9 @@ class Librarian(gym.Env):
                     self.moveToChest(0)
                     to_retrieve = self._requester.get_request()
                     retrieved_items, score = self._optimal_retrieve(to_retrieve)
-                    reward = self._requester.get_reward(to_retrieve, retrieved_items, score)
+                    reward, failed = self._requester.get_reward(to_retrieve, retrieved_items, score)
                     self.stepData.append(score)
+                    self.failureData.append(failed)
         else:
             return self.obs.flatten(), -5, done, dict()
         if self._print_logs:
@@ -481,6 +485,7 @@ class Librarian(gym.Env):
     def log(self):
         # Todo, store steps taken over the whole time, number of invalid actions taken, associate item
         #   with placement position
+        # TODO Graph failureData, itemDistribution per hundered, moving averages
         if self.episode_number % 100 == 0:
             plt.clf()
             plt.hist(self.returnData[self.episode_number - 100 + 1:self.episode_number])
@@ -591,6 +596,8 @@ if __name__ == '__main__':
     lib_path = None
     return_path = None
     step_path = None
+    failure_path = None
+
     log_number = ""
     MAX_ITEMS = 5
     COMPLEXITY_LEVEL = 2
@@ -610,12 +617,16 @@ if __name__ == '__main__':
     returnData = []
     stepData = []
     itemData = {}
+    failureData = []
     if return_path is not None:
         with open(return_path) as json_file:
             returnData = [i for i in json.load(json_file).values()]
     if step_path is not None:
         with open(step_path) as json_file:
             stepData = [i for i in json.load(json_file).values()]
+    if failure_path is not None:
+        with open(failure_path) as json_file:
+            failureData = [i for i in json.load(json_file).values()]
     env = {
         'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
         'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},

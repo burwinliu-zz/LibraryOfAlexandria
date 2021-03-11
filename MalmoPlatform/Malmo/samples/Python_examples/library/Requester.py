@@ -4,6 +4,7 @@ from pathlib import Path
 
 import json
 
+
 class Requester:
     # Reward is how agent learns, + good, - bad
     # Class agent
@@ -35,12 +36,12 @@ class Requester:
         # Max num requests to provide
         self.max_req = max_req
         # Items possible, dict of items to number of stacks
-        self.available = {i: j//64 for i, j in available_input.items()}
+        self.available = {i: j // 64 for i, j in available_input.items()}
         self._items = [i for i in available_input.keys()]
         # Sorted array of items, tuples, 2 items (item_id, probability)
         self.probDist = []
         if complexity_level == 0:
-            self.probDist = [(self._items[random.randint(0, len(available_input)-1)], 1)]
+            self.probDist = [(self._items[random.randint(0, len(available_input) - 1)], 1)]
 
         self.passedReward = {i: lambda x: 0 for i in self._items}
         self.failedReward = {i: lambda x: x * -10 for i in self._items}
@@ -50,7 +51,7 @@ class Requester:
             # Random distribution of multiple objects, restricted to max_req number of objects
             validNums = [i for i in range(len(available_input))]
             while len(validNums) > max_req:
-                validNums.pop(random.randint(0, len(available_input)-1))
+                validNums.pop(random.randint(0, len(available_input) - 1))
             randomNums = sorted([random.random() for _ in range(len(validNums))])
             randomNums[-1] = 1
             print(available_input, validNums, randomNums)
@@ -83,17 +84,19 @@ class Requester:
                     break
         return request
 
-    def get_reward(self, request, response, steps, toPrint = False):
+    def get_reward(self, request, response, steps, to_print=False):
         # TODO add stochastic here for rewards
         reward = 0
-        if toPrint:
+        failed = 0
+        if to_print:
             print(f"REWARD REQUESTED FROM {request} {response} {steps}")
         for i, j in response.items():
             reward += self.passedReward[i](j)
             request[i] -= j
         for i, j in request.items():
             reward += self.failedReward[i](j)
-        return reward + self.stepWeights(steps)
+            failed += j
+        return reward + self.stepWeights(steps), failed
 
     def save_requester(self, path=None):
         # Given a path, save requester at that location (saving self.max_req, self.available, self._items).

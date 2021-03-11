@@ -387,14 +387,16 @@ if __name__ == "__main__":
 
     rewards = []
     steps = []
+    failedData = []
     for _ in range(100):
         mark.reset()
         mark.init_malmo()
         newReq = req.get_request()
         result, score = mark.optimal_retrieve(newReq)
         steps.append(score)
-        reward = req.get_reward(newReq, result, score)
+        reward, failed = req.get_reward(newReq, result, score)
         rewards.append(reward)
+        failedData.append(failed)
     plt.clf()
     plt.hist(rewards)
     plt.title('Reward Distribution at Benchmark')
