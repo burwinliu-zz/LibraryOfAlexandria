@@ -86,16 +86,16 @@ class Requester:
 
     def get_reward(self, request, response, steps, to_print=False):
         # TODO add stochastic here for rewards
-        reward = 0
+        reward = 150
         failed = 0
         if to_print:
             print(f"REWARD REQUESTED FROM {request} {response} {steps}")
         for i, j in response.items():
-            reward += self.passedReward[i](j)
             request[i] -= j
         for i, j in request.items():
-            reward += self.failedReward[i](j)
             failed += j
+        if failed != 0:
+            return 0, failed
         return reward + self.stepWeights(steps), failed
 
     def save_requester(self, path=None):
