@@ -4,6 +4,8 @@ import copy
 import json
 import time
 from random import random
+import os
+
 
 import matplotlib.pyplot as plt
 import numpy
@@ -246,6 +248,8 @@ class BenchMark:
         return result, score
 
     def _updateObs(self):
+        if not self._display:
+            return
         toSleep = .1
         self.world_obs = None
         while self.world_obs is None:
@@ -292,7 +296,6 @@ class BenchMark:
 
     # Complex Move actions
     def moveToChest(self, chest_num, force=False):
-
         if self.agent_position == chest_num:
             return 0
         if self.agent_position - chest_num < 0:
@@ -300,7 +303,8 @@ class BenchMark:
         else:
             result = self.moveRight(2 * abs(self.agent_position - chest_num), force)
         self.agent_position = chest_num
-        time.sleep(self._sleep_interval)
+        if self._display:
+            time.sleep(self._sleep_interval)
         return result
 
     def invAction(self, action, inv_index, chest_index):
@@ -317,6 +321,8 @@ class BenchMark:
         """
             query = dict{ key = itemId: value = number to retrieve }
         """
+        if not self._display:
+            return
         chest = self._chestContents[self.agent_position - 1]
         for itemId, toRetrieve in query.items():
             for i in range(toRetrieve):
@@ -347,15 +353,25 @@ class BenchMark:
 
 
 if __name__ == "__main__":
-    req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}, 2)
+    script_dir = os.path.dirname(__file__)
+    pathToReq = os.path.join(script_dir, "requester.json")
+    print(pathToReq)
+    req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
+                    2, pathToReq)
     # Percentage for failure to open in a chest
+
+    stochasticFailure = [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+                         0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+                         0.01715813232043357, 0.30471561338685693]
     # stochasticFailure = [0.010020667324609045, 0.7805985575324255, 0.618243240812539, 0.06541976810436156,
     #                      0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
     #                      0.01715813232043357, 0.30471561338685693]
-
+    # stochasticFailure = [0.010020667324609045, 0.06541976810436156, 0.014450713025995533,
+    #                      0.05572127466323378, 0.04338720075449303, 0.007890235534481071, 0.01715813232043357,
+    #                      0.618243240812539, 0.7805985575324255, 0.30471561338685693]
     length = 0
     record = {}
-    for _ in range(10000):
+    for _ in range(1000):
         # TODO Average all inputs from requester, and distribute to correct chests
         newReq = req.get_request()
         for i, j in newReq.items():
@@ -365,7 +381,7 @@ if __name__ == "__main__":
             length += j
     probDist = {}
     for i, j in record.items():
-        probDist[i] = j/length
+        probDist[i] = j / length
 
     mark = BenchMark(probDist, stochasticFailure)
 
@@ -403,6 +419,6 @@ if __name__ == "__main__":
             toSave[int(step)] = int(value)
             total += int(value)
         json.dump(toSave, f)
-    print(f"MEAN SCORE IS {total/len(rewards)}")
-    print(f"MEAN STEPS IS {sum(steps)/len(steps)}")
+    print(f"MEAN SCORE IS {total / len(rewards)}")
+    print(f"MEAN STEPS IS {sum(steps) / len(steps)}")
     print(f"PROB DIST IS {req.probDist}")

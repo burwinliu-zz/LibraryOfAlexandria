@@ -14,6 +14,7 @@ class Requester:
     # get
     # complexity level 0 == single request, constant distribution
     def __init__(self, max_req, available_input, complexity_level, file_path=None):
+        print(file_path)
         if file_path is not None:
             # Load dictionaries of self.max_req, self.available, self._items, self.probDist, self.passedReward,
             #   self.failedReward and self.stepWeights instead of custom init.

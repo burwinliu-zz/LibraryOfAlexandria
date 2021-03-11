@@ -621,7 +621,7 @@ if __name__ == '__main__':
         'directoryName': log_number,
         '_display': False,
         '_print_logs': False,
-        '_sleep_interval': .01,
+        '_sleep_interval': 0,
         'returns': returnData,
         'steps': stepData,
         # For benchmarking, holding constant
