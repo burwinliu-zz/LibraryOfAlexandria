@@ -545,7 +545,8 @@ class Librarian(gym.Env):
         plt.savefig(f"{self.directory}/steps_smooth.png")
 
         plt.clf()
-        plt.plot(failureData)
+        print(failureData)
+        plt.plot(self.failureData)
         plt.title('Librarian')
         plt.ylabel('Failures')
         plt.xlabel('Episodes')
