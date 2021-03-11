@@ -72,6 +72,7 @@ class Librarian(gym.Env):
         self.item = 0
         self.obs = numpy.zeros(shape=(self.obs_size + 1, self.max_items_per_chest, len(self._env_items)))
         self.world_obs = None
+        self.heatmap = numpy.zeros(shape=(len(self._env_items), self.obs_size))
         # self._input_dist = sorted(numpy.random.random((len(self._env_items),)))
 
         # required for RLLib
@@ -157,15 +158,17 @@ class Librarian(gym.Env):
         TODO Add step counter, after N amount of steps, (100) if it fails to place, then provide negative rewards 50
         """
         # item to be placed
-        if action not in self.action_tracker:
-            self.action_tracker[action] = 0
-        self.action_tracker[action] += 1
+        
         if self._print_logs:
             print(f" ACTION {action}, {self.action_space}, {self.observation_space}")
             print(self.inv_number)
             print(self.item)
         if action == 0:
             action = self.obs_size
+        if action not in self.action_tracker:
+            self.action_tracker[action] = 0
+        self.action_tracker[action] += 1
+        
         reward = 0
         if self._display:
             time.sleep(self._sleep_interval)
@@ -183,6 +186,8 @@ class Librarian(gym.Env):
                 self.obs[self.agent_position][i][self.item] = 1
                 self._itemPos[self.rMap[self.item]].add(self.agent_position - 1)
                 self._chestContents[self.agent_position - 1][self.rMap[self.item]].append(i)
+                self.heatmap[self.item][self.agent_position-1] += 1/ (self._env_items[self.rMap[self.item]]/64)
+
                 # clear since item has been placed
                 self.obs[0][0] = numpy.zeros(shape=len(self._env_items))
                 placed = True
@@ -480,6 +485,7 @@ class Librarian(gym.Env):
         self._nextOpen = 0
         self.obs[0][0][self.item] = 1
 
+
         return self.obs.flatten()
 
     def log(self):
@@ -524,7 +530,17 @@ class Librarian(gym.Env):
             plt.ylabel('Occurance')
             plt.xlabel('Action')
             plt.savefig(f"{self.directory}/action_barchart{str(self.episode_number)}.png")
+            plt.clf()
+            items = [k for k, v in sorted(self.map.items(), key=lambda item: item[1])]
+            plt.yticks(ticks=numpy.arange(len(items)), labels=items)
+            plt.xticks(ticks=numpy.arange(self.obs_size), labels=range(1, self.obs_size + 1), rotation=90)
+            saved=plt.imshow(self.heatmap, cmap='Blues',interpolation="nearest")
+            plt.colorbar(saved)
+            plt.savefig(f"{self.directory}/heatmap{str(self.episode_number)}.png")
+
             self.action_tracker = {}
+            self.heatmap = numpy.zeros(shape=(len(self._env_items), self.obs_size))
+
 
         box = numpy.ones(self._log_freq) / self._log_freq
         returns_smooth = numpy.convolve(self.returnData[1:], box, mode='same')
@@ -659,19 +675,25 @@ if __name__ == '__main__':
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
+<<<<<<< HEAD
+        # '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
+        #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+        #                        0.01715813232043357, 0.30471561338685693]
+=======
         # 0 reward fails to retrieve items; + retrieving items -factor (num of steps)
         # '_stochasticFailure': [0] * 10
         '_stochasticFailure': [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
                                0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
                                0.01715813232043357, 0.30471561338685693]
+>>>>>>> fbe2ca1077ae7008380fa47650680e6e27c04bb0
         # Medium Case scenario
         # '_stochasticFailure': [0.010020667324609045, 0.7805985575324255, 0.06541976810436156, 0.618243240812539,
         #                        0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
         #                        0.01715813232043357, 0.30471561338685693],
         # Best Case scenario
-        # '_stochasticFailure': [0.010020667324609045, 0.06541976810436156, 0.014450713025995533,
-        #                        0.05572127466323378, 0.04338720075449303, 0.007890235534481071, 0.01715813232043357,
-        #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+        '_stochasticFailure': [0.010020667324609045, 0.06541976810436156, 0.014450713025995533,
+                               0.05572127466323378, 0.04338720075449303, 0.007890235534481071, 0.01715813232043357,
+                               0.618243240812539, 0.7805985575324255, 0.30471561338685693]
         # For true randomness
         # '_stochasticFailure': _stochasticFailure
     }
