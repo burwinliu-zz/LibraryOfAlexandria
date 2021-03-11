@@ -1,0 +1,4 @@
+[{'dragon_egg': [0], 'glass': [2], 'brick': [3]}, {'ladder': [1], 'diamond': [2], 'stone': [3]}, {'stone': [1], 'dragon_egg': [1], 'diamond': [3]}, {'stone': [1], 'dragon_egg': [1, 2]}, {'diamond': [1], 'stone': [2], 'dragon_egg': [2]}, {'brick': [1], 'ladder': [2], 'stone': [3]}, {'dragon_egg': [0], 'diamond': [2], 'stone': [3]}] {'dragon_egg': {0, 2, 3, 4, 6}, 'glass': {0}, 'brick': {0, 5}, 'ladder': {1, 5}, 'diamond': {1, 2, 4, 6}, 'stone': {1, 2, 3, 4, 5, 6}}
+MEAN SCORE IS -38.96
+MEAN STEPS IS 37.96
+PROB DIST IS [('stone', 0.25955249534969715), ('diamond', 0.5113247434807042), ('glass', 0.5455831895245057), ('ladder', 0.6089927182968868), ('brick', 0.672864389789027), ('dragon_egg', 1)]

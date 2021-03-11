@@ -165,6 +165,8 @@ class BenchMark:
         """
         Initialize new malmo mission.
         """
+        if not self._display:
+            return
         my_mission = MalmoPython.MissionSpec(self.GetMissionXML(), True)
         my_mission_record = MalmoPython.MissionRecordSpec()
         my_mission.requestVideo(800, 500)
@@ -302,6 +304,8 @@ class BenchMark:
         return result
 
     def invAction(self, action, inv_index, chest_index):
+        if not self._display:
+            return
         self._updateObs()
         if "inventoriesAvailable" in self.world_obs:
             chestName = self.world_obs["inventoriesAvailable"][-1]['name']
@@ -338,16 +342,16 @@ class BenchMark:
     def reset(self):
         # Todo, according to self.distribution, distribute items in self._itemPos and self._chestContents
         self._chestContents, self._itemPos = copy.deepcopy(self.default)
-        self.moveToChest(-1, True)
+        self.moveToChest(-1)
         pass
 
 
 if __name__ == "__main__":
     req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}, 2)
     # Percentage for failure to open in a chest
-    stochasticFailure = [0.010020667324609045, 0.7805985575324255, 0.618243240812539, 0.06541976810436156,
-                         0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-                         0.01715813232043357, 0.30471561338685693]
+    # stochasticFailure = [0.010020667324609045, 0.7805985575324255, 0.618243240812539, 0.06541976810436156,
+    #                      0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
+    #                      0.01715813232043357, 0.30471561338685693]
 
     length = 0
     record = {}
@@ -366,11 +370,13 @@ if __name__ == "__main__":
     mark = BenchMark(probDist, stochasticFailure)
 
     rewards = []
+    steps = []
     for _ in range(100):
         mark.reset()
         mark.init_malmo()
         newReq = req.get_request()
         result, score = mark.optimal_retrieve(newReq)
+        steps.append(score)
         reward = req.get_reward(newReq, result, score)
         rewards.append(reward)
     plt.clf()
@@ -397,4 +403,6 @@ if __name__ == "__main__":
             toSave[int(step)] = int(value)
             total += int(value)
         json.dump(toSave, f)
-    print(f"MEAN IS {total/len(rewards)}")
+    print(f"MEAN SCORE IS {total/len(rewards)}")
+    print(f"MEAN STEPS IS {sum(steps)/len(steps)}")
+    print(f"PROB DIST IS {req.probDist}")
