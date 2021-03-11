@@ -62,8 +62,8 @@ class Librarian(gym.Env):
         self.episode_number = 0
 
         # Data saves
-        self.returnsData = env_config['returnsData']
-        self.stepsData = env_config['stepsData']
+        self.returnData = env_config['returnData']
+        self.stepData = env_config['stepData']
         self.itemData = env_config['itemData']
 
         self.inv_number = 0
@@ -579,11 +579,15 @@ if __name__ == '__main__':
     #   histograms, bin it every 10 cycles (or maybe 50?) -- saving data then mess with plot
     # Data + model to be saved --
     #
+    script_dir = os.path.dirname(__file__)
+
     # req_path = "PATHTO\\library\\logs2\\requester.json "
     # lib_path = "PATHTO\\library\\logs2\\checkpoint_1102\\checkpoint-1102"
     # return_path = "PATHTO\\library\\logs2\\returnsfinalpart.json "
     # step_path = "PATHTO\\library\\logs2\\stepData.json "
-    req_path = None
+
+    req_path = os.path.join(script_dir, "requester.json")
+    # req_path = None
     lib_path = None
     return_path = None
     step_path = None
@@ -622,9 +626,9 @@ if __name__ == '__main__':
         '_display': False,
         '_print_logs': False,
         '_sleep_interval': 0,
-        'returnsData': returnData,
-        'stepsData': stepData,
-        'itemsData': itemData,
+        'returnData': returnData,
+        'stepData': stepData,
+        'itemData': itemData,
         # For benchmarking, holding constant
         # Worse case scenario
         # Todo Show all 3 cases then, and graph step time
