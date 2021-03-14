@@ -19,11 +19,11 @@ In order to implement PPO reinforcement for this problem we first definied what 
 1. The item the agent is about the place
 2. All the items placed in the chests currently an their positions
 
-At first we created a 2 dimesional observation space where the items were assigned a number ex. diamond=0, stone=1, glass=2 so that we could represent the item as a integer in the observation space. The 2d observation space followed the following dimesions
+At first we created a 2 dimesional observation space where the items were assigned a number ex. stone=1, diamond=2, glass=3 so that we could represent the item as a integer in the observation space. The 2d observation space followed the following dimesions
 
 (number_of_chests + 1, number_of_chest_slots) 
 
-After some research on one-hot encoding and a meeting with the TA we realized instead of assigning items to decimal numbers as the 2d observation space required we treat the items as one-hot encoded integers ex. diamond=[1,0,0], stone=[0,1,0], glass=[0,0,1]. This would improve our learning rate since our labels were non ordinal. This expanded our observation space to a three dimensional space. Where the new dimesions were
+After some research on one-hot encoding and a meeting with the TA we realized instead of assigning items to decimal numbers as the 2d observation space required we treat the items as one-hot encoded integers ex. stone=[1,0,0], diamond=[0,1,0], glass=[0,0,1]. This would improve our learning rate since our labels were non ordinal. This expanded our observation space to a three dimensional space. Where the new dimesions were
 
 (number_of_chests + 1, number_of_chest_slots, unique_item_onehot) 
 
