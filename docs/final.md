@@ -26,14 +26,15 @@ At first we created a 2 dimesional observation space where the items were assign
 The reason we have number_of_chests + 1 rather than number_of_chests in our observation space is to hold the item the agent is about to place next we treat this item as an entirely new chest whose first position is filled in with the one hot encoded item that is to be placed next all other spots in this chest are always empty. This allowed us to maintain using a linear model and also eliminated the need to generate preprocessing or a custom observation space dimensions with little cost on training.
 
 As seen in the image below our observation space was initially mapped as an array of the values below.
-![2D Observation space](https://github.com/burwinliu/LibraryOfAlexandria/blob/main/docs/static/2d_observation.png)
+<img src="static/2d_observation.png"/>
 
 After some research on one-hot encoding and a meeting with the TA we realized instead of assigning items to decimal numbers as the 2d observation space required we treat the items as one-hot encoded integers ex. stone=[1,0,0], diamond=[0,1,0], glass=[0,0,1]. This would improve our learning rate since our labels were non ordinal. This expanded our observation space to a three dimensional space. Where the new dimesions were
 
 (number_of_chests + 1, number_of_chest_slots, unique_item_onehot) 
 
 As seen in the image below our observation space ended up mapping to a 3d space.
-![One hot encoding](https://github.com/burwinliu/LibraryOfAlexandria/blob/main/docs/static/one_hot_observation.png)
+<img src="static/one_hot_observation.png"/>
+
 
 
 Once we decided our observation space we decided our action space. For this we essentially let the agent select a chest to put the item it is holding every step the agent recieved what essentially is an index to the chest. Once at the chest it places the item in the closest empty slot in its observation space. We avoided giving individual steps like move left and move right and place object since our goal with the agent was not to navigate the environment but to place the items in the best slots.
