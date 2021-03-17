@@ -6,13 +6,23 @@ title: Final Report
 # Video
 
 # Project Summary
-The goal of the Library of Alexandria is to train an agent that can optimally place a variety of items in a set of n chests in a manner that can ensure that paterons who visit the Library can recieve the items they request and that they are recieved in the least amount of steps possible. As seen below our environment consists of 10 chests and the agent has a set of predefnined items dropped on the emerald square. The agent then picks up all these items and one by one decides where each of the items should be placed in the chests. We added additonal contraints to the chests where they have a random rate of failure.
+The goal of the Library of Alexandria is to train an agent that can optimally place a variety of items in a set of n chests in a manner that can ensure that "paterons" who visit the Library can recieve the items they request and that they are recieved in the least amount of steps possible. This was set to model a library scenario where libraries need to store their bo0ks in the best way possible to improve the library experience. As seen below our environment consists of 10 chests and the agent has a set of predefined items dropped on the emerald square.
+
+<img src="static/setup.png"/>
+
+We used the following batch of items to represent our predefinied stock
+
+
 
 In our case we generated this idea of the "pateron" by designing a distribution at which each item is requested at. 
+
+
+In order to simulate this behavior of "stocking" the library, the agent then picks up all these items and one by one decides where each of the items should be placed in the chests. Once the "stocking" is complete a "pateron" requests for a set of items and the agent has to retrive the items. To add complexity the chests also have a chance to fail opening when the agent tries to retrieve the items. 
+
 # Approaches
 For our approach to solving this problem we employed PPO reinforcement learning and we compared this against our benchmark employing the idea of the law of large numbers and placing the items in a algorithimic manner based on a simulated 10k requests by our "pateron" distribution. In our evaluation section we will go in depth in how our benchmark faired against our PPO algorithim and the precise improvements PPO had over our trivial brute force algorithim. 
 
-####PPO reinforcement learning
+#### PPO reinforcement learning approach
 
 In order to implement PPO reinforcement for this problem we first definied what the observation space for our agent would be. We decided that the observation space would consist of two main details:
 
@@ -39,14 +49,16 @@ As seen in the image below our observation space ended up mapping to a 3d space.
 
 Once we decided our observation space we decided our action space. For this we essentially let the agent select a chest to put the item it is holding. Once at the chest it places the item in the closest empty slot in its observation space. We avoided giving individual steps like move left and move right and place object since our goal with the agent was not to navigate the environment but to place the items in the best slots.
 
-The idea of figuring out the best slots is where our reward function plays its role. As opposed to traditional RL method of providing a reward after every action the agent recieves no reward until it has placed all the items once it has placed all the items. The agent then recieves a request on a distribution based on a probability a "pateron" may select any specific item. Once the request is recieved the agent uses a simple algorithim to recieve the items going to the closest chest first. If it is able to open the chest then it takes its reward. If the agent cannot open the chest due to the chest being "locked" on the precentages we defined then it skips retriving the item. We have all rewards defined as less than 0 so our agent tries to minimize the negative reward.
+The idea of figuring out the best slots is where our reward function plays its role. The agent recieves no reward until it has placed all the items once it has placed all the items which means our PPO algorithim has to deal with both sparse, delayed, and episodic rewards. The agent then recieves a request on a distribution based on a probability a "pateron" may select any specific item. Once the request is recieved the agent uses a simple algorithim to recieve the items going to the closest chest first. If it is able to open the chest then it takes its reward. If the agent cannot open the chest due to the chest being "locked" on the precentages we defined then it skips retriving the item. We have all rewards defined as less than 0 so our agent tries to minimize the negative reward.
 
 1. We allot a -1 reward for every step the agent takes to retrive the item.
 2. We allot a -10 reward it the agent is not able to retrieve the item if the chest cannot be opened.
-3. A -100 reward explained below
+3. A -5 reward explained below
 
-What we realized when implementing this was that after some training time our agent was taking a very long time to place the items. After some investigation we realized our agent was always finding the closest chest to be ideal for every item so in order to disuade the agent to try to place an item into a chest that is already full we attributed a massive -100 reward when the agent fails to place the item. 
+What we realized when implementing this was that after some training time our agent was taking a very long time to place the items. After some investigation we realized our agent was always finding the closest chest to be ideal for every item so in order to disuade the agent to try to place an item into a chest that is already full we attributed a  -5 reward when the agent fails to place the item. 
 
+
+#### Benchmark Approach
 
 
  
