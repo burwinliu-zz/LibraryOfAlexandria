@@ -41,16 +41,37 @@ The Enviornment is held constant as shown in the image above, with 10 "Library" 
 
 > [D, D, D, D, D, D, D, D, D, D, E, I]
 
-With the current definition, this problem is trivial. However, our problem also has a bit of an issue -- when distributing in certain chests, they may have a chance, when retrieved, will not properly open, therefore, sealing the contents and preventing them from being retrieved. This moves the problem from being trivially easy to a problem to a problem warranting Machine Learning, which we will later demonstrate after explaining the rest of the setup.
+With the current definition, this problem is trivial. However, our problem also has a bit of an issue -- when distributing in certain chests, they may have a chance, when accessed, the chest will not properly open, therefore, sealing the contents and preventing them from being retrieved. This moves the problem from being trivially easy to a problem to a problem warranting Machine Learning, which we will later demonstrate after explaining the rest of the setup.
 
 The Agent is then spawned in on the Emerald Block, with an inventory full of items to distribute, which it will need to distribute, then recieve a request from the "Requester" agent, which will represent the user making requests of items. 
 
 ### Requester Setup
-Our requester is setup so that 
+Our Problem has a requester setup to simulate the user. 
 
+The distribution is simulated as thus:  
+Let there be n items to be retrieved, and m possible items to be retrieved at once. On initialization an array of m sorted, random numbers. Whenever a "request" is made, n random numbers are generated, and whichever "range" the number falls under will be the item requested. This will make up the request, which will be sent to the librarian to be retrieved from their distribution. 
+  
+In Pseudo Code:
+1. Generation: 
+```
+items = sorted([random() for _ in range(numberItems)])
+```
+2. Request:
+```
+result = []
+for _ in requestAmount:
+    number = random()
+    for i in items:
+        if number < i: 
+            result.append(item[i])
+            break
+return result
+```
+
+That request will be then retrieved, and the performance of the agent be measured by requesting for rewards based on what was retrieved, and how many steps it took
 
 ### Rewards Setup
-
+The rewards will be provided two parameters, the number of steps it took to retrieve the request, and what was requested. Some items will not be retrieved, as some items may be locked in an unopenable chest, therefore there are those two parameters, to represent time, and what was not retrieved. The more time, the less reward. If some items fail to retrieve, the reward will automatically be set to some negative value, as therefore the agent failed to get the full request
 
 
 ## Approaches
