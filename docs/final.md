@@ -120,15 +120,32 @@ As seen in the image below our observation space ended up mapping to a 3d space.
 <img src="static/one_hot_observation.png"/>
 
 Once we decided our observation space we decided our action space. For this we essentially let the agent select a chest to put the item it is holding. Once at the chest it places the item in the closest empty slot in its observation space. We avoided giving individual steps like move left and move right and place object since our goal with the agent was not to navigate the environment but to place the items in the best slots.
+```
+self.action_space = Discrete(number_of_chests)
 
+```
 
-The idea of figuring out the best slots is where our reward function plays its role. The agent recieves no reward until it has placed all the items once it has placed all the items which means our PPO algorithim has to deal with both sparse, delayed, and episodic rewards. The agent then recieves a request on a distribution based on a probability a "pateron" may select any specific item. Once the request is recieved the agent uses a simple algorithim to recieve the items going to the closest chest first. If it is able to open the chest then it takes its reward. If the agent cannot open the chest due to the chest being "locked" on the precentages we defined then it, then it will move through its memory of remaining chests until no more remain. If it fails to retrieve a given item, then it will be penalized
+'''
 
-1. We allot a -1 reward for every step the agent takes to retrive the item.
-2. We allot a -10 reward it the agent is not able to retrieve the item if the chest cannot be opened.
-3. A -5 reward explained below
+The idea of figuring out the best slots is where our reward function plays its role. The agent recieves no reward until it has placed all the items once it has placed all the items which means our PPO algorithim has to deal with both sparse, delayed, and episodic rewards. The agent then runs a simple retrival algorithim psuedocode shown below which retrives items based on the distribution the requester has in the project summary. 
 
-What we realized when implementing this was that after some training time our agent was taking a very long time to place the items. After some investigation we realized our agent was always finding the closest chest to be ideal for every item so in order to disuade the agent to try to place an item into a chest that is already full we attributed a  -5 reward when the agent fails to place the item. 
+<pre>
+    <code>
+        for item_id, num_retrieve in input.items(): # loop through the request
+                pq_items = sorted([i for i in self._itemPos[item_id]])
+                while num_retrieve > 0: # get all items requested of an item type
+                    #look through chests agent has been tracking to find optimal chest
+                    toConsider = pq_items.pop()
+                    chest = self._chestContents[toConsider]
+                    action_plan.append((toConsider, item_id, toRetrieve))
+                    result[item_id] += toRetrieve
+                    num_retrieve -= toRetrieve
+        #order the way the retrival happens so the agent hits the closer chests first
+        action_plan = sorted(action_plan, key=lambda x: x[0])
+    </code>            
+</pre>
+
+The rewards were calculated the same way as described in the project summary with one caveat. What we realized when implementing this was that after some training time our agent was taking a very long time to place the items. After some investigation we realized our agent was always finding the closest chest to be ideal for every item so in order to disuade the agent to try to place an item into a chest that is already full we attributed a  -5 reward when the agent fails to place the item.
 
 
 ### Benchmark Approach
