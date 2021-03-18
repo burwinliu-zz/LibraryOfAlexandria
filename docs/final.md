@@ -28,6 +28,7 @@ I will describe the problem setup in 3 parts:
        
 ### Environment Setup
 The enviornment, will represent the "Library".
+
 <img src="static/setup.png"/>
 
 As you can see, we created a linear row of chests to represent this enviornment. There agent can stand in the second row only, with 3 "spots" the agent may reside in. 
@@ -40,12 +41,12 @@ The Enviornment is held constant as shown in the image above, with 10 "Library" 
 
 > [D, D, D, D, D, D, D, D, D, D, E, I]
 
-TODO discuss stochastic chests
+With the current definition, this problem is trivial. However, our problem also has a bit of an issue -- when distributing in certain chests, they may have a chance, when retrieved, will not properly open, therefore, sealing the contents and preventing them from being retrieved. This moves the problem from being trivially easy to a problem to a problem warranting Machine Learning, which we will later demonstrate after explaining the rest of the setup.
 
 The Agent is then spawned in on the Emerald Block, with an inventory full of items to distribute, which it will need to distribute, then recieve a request from the "Requester" agent, which will represent the user making requests of items. 
 
 ### Requester Setup
-
+Our requester is setup so that 
 
 
 ### Rewards Setup
@@ -92,8 +93,11 @@ The idea of figuring out the best slots is where our reward function plays its r
 What we realized when implementing this was that after some training time our agent was taking a very long time to place the items. After some investigation we realized our agent was always finding the closest chest to be ideal for every item so in order to disuade the agent to try to place an item into a chest that is already full we attributed a  -5 reward when the agent fails to place the item. 
 
 
-#### Benchmark Approach
+### Benchmark Approach
 
+#### Benchmark Greedy
+
+#### Benchmark Uniform
 
  
 ## Evaluation
