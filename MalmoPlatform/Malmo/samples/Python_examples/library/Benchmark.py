@@ -365,7 +365,7 @@ if __name__ == "__main__":
                     2, pathToReq)
     # Percentage for failure to open in a chest
 
-    stochasticFailure =  [0] * 10
+    # stochasticFailure =  [0] * 10
     # stochasticFailure = [0.7805985575324255, 0, 0.618243240812539, 0,
     #                         0, 0, 0, 0,
     #                         0, 0.30471561338685693]
@@ -374,12 +374,12 @@ if __name__ == "__main__":
     #                        0, 0, 0, 0,
     #                        0, 0.30471561338685693]
     # Best Case scenario
-    # stochasticFailure =  [0, 0, 0,
-    #                        0, 0, 0, 0,
-    #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+    stochasticFailure =  [0, 0, 0,
+                           0, 0, 0, 0,
+                           0.618243240812539, 0.7805985575324255, 0.30471561338685693]
     length = 0
     record = {}
-    for _ in range(1000):
+    for _ in range(10000):
         # TODO Average all inputs from requester, and distribute to correct chests
         newReq = req.get_request()
         for i, j in newReq.items():
@@ -396,7 +396,7 @@ if __name__ == "__main__":
     rewards = []
     steps = []
     failedData = []
-    for _ in range(100):
+    for _ in range(1000):
         mark.reset()
         mark.init_malmo()
         newReq = req.get_request()
@@ -430,5 +430,13 @@ if __name__ == "__main__":
             total += int(value)
         json.dump(toSave, f)
     print(f"MEAN SCORE IS {total / len(rewards)}")
+    print(f"MAX SCORE IS {max(rewards)}")
+    print(f"MIN SCORE IS {min(rewards)}")
     print(f"MEAN STEPS IS {sum(steps) / len(steps)}")
+    print(f"MAX SCORE IS {max(steps)}")
+    print(f"MIN SCORE IS {min(steps)}")
+
+    print(f"MEAN FAILS IS {sum(failedData) / len(failedData)}")
+    print(f"MAX FAILS IS {max(failedData)}")
+    print(f"MIN FAILS IS {min(failedData)}")
     print(f"PROB DIST IS {req.probDist}")
