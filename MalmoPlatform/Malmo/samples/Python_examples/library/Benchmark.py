@@ -1,5 +1,8 @@
 # Todo, create a benchmark with already present Librarian Methods copied over to see performance and compare
 #  (todo point 3) NOT WORKING YET BUT WILL BE CONTINUE TO PROGRESS ON THIS
+
+DISPLAY = False
+
 import copy
 import json
 import time
@@ -12,20 +15,23 @@ import numpy
 
 from Requester import Requester
 
-try:
-    from malmo import MalmoPython
-except ImportError:
-    import MalmoPython
+if DISPLAY:
+    try:
+        from malmo import MalmoPython
+    except ImportError:
+        import MalmoPython
 
 
 class BenchMark:
     def __init__(self, distribution, failure):
+        self._display = DISPLAY
         self.episode_number = 0
         self.obs_size = 10
-        self._env_items = {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3}
-        self.agent = MalmoPython.AgentHost()
+        self._env_items = {'stone': 128, 'diamond': 128, 'glass': 128, 'ladder': 128, 'brick': 128, 'dragon_egg': 128}
+        if DISPLAY:
+            self.agent = MalmoPython.AgentHost()
         self._stochasticFailure = failure
-        self._display = False
+        
         self._sleep_interval = .2
         self.agent_position = 0
         self._nextOpen = 0
@@ -83,7 +89,6 @@ class BenchMark:
                             self._itemPos[item] = set()
                         self._chestContents[pos][item].append(contents)
                         self._itemPos[item].add(pos)
-        print(self._chestContents, self._itemPos)
         self.default = copy.deepcopy([self._chestContents, self._itemPos])
 
     def GetMissionXML(self):
@@ -356,19 +361,22 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
     pathToReq = os.path.join(script_dir, "requester.json")
     print(pathToReq)
-    req = Requester(5, {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
+    req = Requester(5, {'stone': 128, 'diamond': 128, 'glass': 128, 'ladder': 128, 'brick': 128, 'dragon_egg': 128},
                     2, pathToReq)
     # Percentage for failure to open in a chest
 
-    stochasticFailure = [0.7805985575324255, 0.010020667324609045, 0.618243240812539, 0.06541976810436156,
-                         0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-                         0.01715813232043357, 0.30471561338685693]
-    # stochasticFailure = [0.010020667324609045, 0.7805985575324255, 0.618243240812539, 0.06541976810436156,
-    #                      0.014450713025995533, 0.05572127466323378, 0.04338720075449303, 0.007890235534481071,
-    #                      0.01715813232043357, 0.30471561338685693]
-    # stochasticFailure = [0.010020667324609045, 0.06541976810436156, 0.014450713025995533,
-    #                      0.05572127466323378, 0.04338720075449303, 0.007890235534481071, 0.01715813232043357,
-    #                      0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+    stochasticFailure =  [0] * 10
+    # stochasticFailure = [0.7805985575324255, 0, 0.618243240812539, 0,
+    #                         0, 0, 0, 0,
+    #                         0, 0.30471561338685693]
+    # Medium Case scenario
+    # stochasticFailure =  [0, 0.7805985575324255, 0, 0.618243240812539,
+    #                        0, 0, 0, 0,
+    #                        0, 0.30471561338685693]
+    # Best Case scenario
+    # stochasticFailure =  [0, 0, 0,
+    #                        0, 0, 0, 0,
+    #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
     length = 0
     record = {}
     for _ in range(1000):
@@ -402,7 +410,7 @@ if __name__ == "__main__":
     plt.title('Reward Distribution at Benchmark')
     plt.ylabel('Occurance')
     plt.xlabel('Reward')
-    plt.savefig(f"benchmark/reward_histogram.png")
+    plt.savefig(f"./benchmark/reward_histogram.png")
     toSave = {}
     plt.clf()
     log_freq = 10
@@ -413,7 +421,7 @@ if __name__ == "__main__":
     plt.title('Librarian')
     plt.ylabel('Reward')
     plt.xlabel('Episodes')
-    plt.savefig(f"benchmark/smooth_returns.png")
+    plt.savefig(f"./benchmark/smooth_returns.png")
     total = 0
     # Number of steps taken with uniform distribution, with greedy
     with open(f"benchmark/returnsfinalpart.json", 'w') as f:
