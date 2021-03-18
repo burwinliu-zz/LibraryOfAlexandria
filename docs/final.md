@@ -204,6 +204,51 @@ This creates a distribution that will be roughly proportional to the distributio
  
 ## Evaluation
 ### Qualtitative
+In order to evaluate the various cases our agent could encounter we modeled 5 different sets of probabilites to determine if the stocasticity of the chests effected both the triviality of the problem and at what parameters (if any) the RL agent provided better results than the benchmarking distributions.
+
+##### Case 1: No Chest Stochasticity
+
+Benchmark results:
+
+
+RL results:
+
+
+
+Explanation of Findings
+
+
+##### Case 2: High chance of failure in chests close to the start position
+
+Benchmark results:
+
+
+RL results:
+
+
+
+Explanation of Findings
+
+##### Case 3: High Chance of failure with chests at the end of the chest row
+Benchmark results:
+
+
+RL results:
+
+
+
+Explanation of Findings
+
+##### Case 4: Random
+Benchmark results:
+
+
+RL results:
+
+
+
+Explanation of Findings
+
 
 ### Quantative
 
