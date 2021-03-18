@@ -102,6 +102,10 @@ What we realized when implementing this was that after some training time our ag
  
 ## Evaluation
 
+### Qualtitative
+
+### Quantative
+
 ## References
 
 https://machinelearningmastery.com/why-one-hot-encode-data-in-machine-learning/

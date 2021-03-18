@@ -44,7 +44,7 @@ class Requester:
             self.probDist = [(self._items[random.randint(0, len(available_input) - 1)], 1)]
 
         self.passedReward = {i: lambda x: 0 for i in self._items}
-        self.failedReward = {i: lambda x: x * -10 for i in self._items}
+        self.failedReward = {i: lambda x: x * -100 for i in self._items}
         self.stepWeights = lambda x: x * -1
         # Random numbers, probability get_request, get_reward
         if complexity_level == 1:
@@ -86,7 +86,7 @@ class Requester:
 
     def get_reward(self, request, response, steps, to_print=False):
         # TODO add stochastic here for rewards
-        reward = 150
+        reward = 1500
         failed = 0
         if to_print:
             print(f"REWARD REQUESTED FROM {request} {response} {steps}")
@@ -95,7 +95,7 @@ class Requester:
         for i, j in request.items():
             failed += j
         if failed != 0:
-            return 0, failed
+            return -100 * failed, failed
         return reward + self.stepWeights(steps), failed
 
     def save_requester(self, path=None):

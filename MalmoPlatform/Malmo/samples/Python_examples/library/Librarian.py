@@ -659,7 +659,7 @@ if __name__ == '__main__':
         with open(failure_path) as json_file:
             failureData = [i for i in json.load(json_file).values()]
     env = {
-        'items': {'stone': 128, 'diamond': 64, 'glass': 64, 'ladder': 128, 'brick': 64, 'dragon_egg': 128 * 3},
+        'items': {'stone': 128, 'diamond': 128, 'glass': 128, 'ladder': 128, 'brick': 128, 'dragon_egg': 128},
         'mapping': {'stone': 0, 'diamond': 1, 'glass': 2, 'ladder': 3, 'brick': 4, 'dragon_egg': 5},
         'rmapping': {0: 'stone', 1: 'diamond', 2: 'glass', 3: 'ladder', 4: 'brick', 5: 'dragon_egg'},
         'chestNum': 10,
