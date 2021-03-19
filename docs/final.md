@@ -87,6 +87,13 @@ This makes up the rewards returned as a benchmark from the Requester.py file, wh
 ### Agent Setup
 With the enviornment setup, we now arrive at the final part of the puzzle. We provide our agent, the solution that we create with the enviornment, and an interface to communicate with to get a reward, given its ability to retrieve items. The details of the enviornment setup, such as the exact percentage of times a chest will be opened, along with the distribution of the requests will be hidden, and will be the informations the agent must learn.
 
+The process goes as thus: 
+
+1. Setup Enviornment and Agent
+2. Agent Distributes the items
+3. Agent Retrieves the items, saving the steps and items retrieved
+4. Agent Gets score based off performance
+
 ## Approaches
 For our approach to solving this problem we employed PPO reinforcement learning, using RLib. To prove the efficacy of our approach, and the  we compared this against our benchmark employing the idea of the law of large numbers and placing the items in a algorithimic manner based on a simulated 10k requests by our "pateron" distribution. In our evaluation section we will go in depth in how our benchmark faired against our PPO algorithim and the precise improvements PPO had over our trivial brute force algorithim. 
 
