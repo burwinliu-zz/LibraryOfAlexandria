@@ -270,6 +270,18 @@ By running both benchmarks and solution on these settings, we can ensure that di
     </div>
 </div>
 
+<div style="display: flex;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/heatmap32200.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/reward_histogram32200.png"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/step_histogram32200.png"/> 
+    </div>
+</div>
+
 
 
 
