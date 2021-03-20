@@ -316,7 +316,6 @@ Benchmark (Optimal) results:
 
 RL results:
 <img src="static/graphs/case2/case2.png"/>
-<img src="static/graphs/case2/first/heatmap100.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case2/first/heatmap100.png" style="width:100%"/>
@@ -372,7 +371,6 @@ Benchmark (Optimal) results:
 
 RL results:
 <img src="static/graphs/case3/case3.png"/>
-<img src="static/graphs/case3/first/heatmap100.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case3/first/heatmap100.png" style="width:100%"/>
@@ -387,13 +385,13 @@ RL results:
 
 <div style="display: flex;">
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case1/third/heatmap43800.png" style="width:100%"/>
+        <img src="static/graphs/case3/third/heatmap43800.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case1/third/reward_histogram43800.png" style="width:100%"/> 
+        <img src="static/graphs/case3/third/reward_histogram43800.png" style="width:100%"/> 
      </div>
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case1/third/step_histogram43800.png" style="width:100%"/> 
+        <img src="static/graphs/case3/third/step_histogram43800.png" style="width:100%"/> 
     </div>
 </div>
 
@@ -427,7 +425,7 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case4/first/heatmap100.png"/>
+<img src="static/graphs/case4/first/case4.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case4/first/heatmap100.png" style="width:100%"/>
