@@ -214,6 +214,7 @@ Our benchmarks were created with 10000 iteratons to create the distribution, and
 For the uniform benchmark (file found in [here](https://github.com/burwinliu/LibraryOfAlexandria/blob/main/MalmoPlatform/Malmo/samples/Python_examples/library/BenchmarkUniform.py)), we took a similar approach to the previous "optimal" benchmark, with just a slight change during the distribution of items.
 
 In the "optimal" benchmark, this was how we sampled for the true probability distribution:
+<p>
 <code>
     record = {}
     for _ in N:
@@ -221,10 +222,15 @@ In the "optimal" benchmark, this was how we sampled for the true probability dis
         record.insert(item, record[item]+1 or 0)
     record = {i, j/N for i, j in record}
 </code>
+</p>
+<p>
 For the uniform benchmark, we would change this last line to:
+</p>
+<p>
 <code>
     record = {i, 1.0/len(record) for i, j in record}
 </code>
+</p>
 This would make all the items have the same probability in our distribution, so that in part two, the items would get distributed evenly in a uniform manner, with no particular items being prioritized/more likely to occur first in the chests.
 
 We expect this uniform benchmark to yield the worst results, as this benchmark is almost like distributing the items into the chests in a random order. For this benchmark, we also used 10000 iterations to create the distribution, and 1000 iterations over the requests, to keep it constant for a more accurate comparison between the two benchmarks.
