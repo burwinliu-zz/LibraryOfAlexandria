@@ -267,9 +267,9 @@ By running both benchmarks and solution on these settings, we can ensure that di
  </tr>
  <tr>
      <td>First 100</td>
-     <td> <img src="static/graphs/case1/first/heatmap100.png"/> </td>
-     <td> <img src="static/graphs/case1/first/reward_histogram100.png"/> </td>
-     <td> <img src="static/graphs/case1/first/step_histogram100.png"/> </td>
+     <td> <img src="static/graphs/case1/first/heatmap100.png" style="width: 50%; height: 50%"/> </td>
+     <td> <img src="static/graphs/case1/first/reward_histogram100.png" style="width: 50%; height: 50%"/> </td>
+     <td> <img src="static/graphs/case1/first/step_histogram100.png" style="width: 50%; height: 50%"/> </td>
  </tr>
 </table>
 
