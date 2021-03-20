@@ -258,7 +258,20 @@ By running both benchmarks and solution on these settings, we can ensure that di
 
 ###### RL results:
 <img src="static/graphs/case1/case1.png"/>
-<img src="static/graphs/case1/first/heatmap100.png"/>
+<table style="width:100%">
+ <tr>
+    <th> Run </th>
+    <th>Heatmap</th>
+    <th>Reward Histogram</th>
+    <th>Step Histogram</th>
+ </tr>
+ <tr>
+     <td>First 100</td>
+     <td> <img src="static/graphs/case1/first/heatmap100.png"/> </td>
+     <td> <img src="static/graphs/case1/first/reward_histogram100.png"/> </td>
+     <td> <img src="static/graphs/case1/first/step_histogram100.png"/> </td>
+ </tr>
+</table>
 
 
 
