@@ -301,7 +301,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
-
+<p></p>
 
 ###### Benchmark (Uniform) results:
 <table style="width:100%">
@@ -330,6 +330,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
+<p></p>
 
 ###### RL results:
 <div style="display: flex;width:100%;">
@@ -398,7 +399,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
-
+<p></p>
 
 ##### Benchmark (Uniform) results:
 <table style="width:100%">
@@ -427,6 +428,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
+<p></p>
 
 #### RL results:
 <div style="display: flex;width:100%;">
@@ -492,7 +494,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
-
+<p></p>
 
 ##### Benchmark (Uniform) results:
 <table style="width:100%">
@@ -521,6 +523,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
+<p></p>
 
 #### RL results:
 <div style="display: flex;width:100%;">
@@ -586,7 +589,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
-
+<p></p>
 
 ##### Benchmark (Uniform) results:
 <table style="width:100%">
@@ -615,6 +618,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>0</td>
   </tr>
 </table>
+<p></p>
 
 #### RL results:
 <div style="display: flex;width:100%;">
