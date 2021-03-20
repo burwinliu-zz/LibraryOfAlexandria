@@ -292,7 +292,7 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case1/case2.png"/>
+<img src="static/graphs/case2/case2.png"/>
 
 ### Case 3: High Chance of Failure in chests towards the middle
 Benchmark (Optimal) results:
@@ -324,7 +324,7 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case1/case3.png"/>
+<img src="static/graphs/case3/case3.png"/>
 
 
 ### Case 4: High Chance of failure with chests at the end of the chest row
@@ -357,12 +357,12 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case1/case4.png"/>
+<img src="static/graphs/case4/case4.png"/>
 
 
 ### Case 5: Random
 RL results:
-<img src="static/graphs/case1/case5.png"/>
+<img src="static/graphs/case5/case5.png"/>
 
 
 ### Qualitative Analysis
