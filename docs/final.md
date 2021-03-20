@@ -425,7 +425,7 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case4/first/case4.png"/>
+<img src="static/graphs/case4/case4.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case4/first/heatmap100.png" style="width:100%"/>
