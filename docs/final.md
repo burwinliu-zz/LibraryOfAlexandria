@@ -215,21 +215,25 @@ For the uniform benchmark (file found in [here](https://github.com/burwinliu/Lib
 
 In the "optimal" benchmark, this was how we sampled for the true probability distribution:
 <p>
-<code>
-    record = {}
-    for _ in N:
-        item = get_request()
-        record.insert(item, record[item]+1 or 0)
-    record = {i, j/N for i, j in record}
-</code>
+    <pre>
+        <code>
+            record = {}
+            for _ in N:
+                item = get_request()
+                record.insert(item, record[item]+1 or 0)
+            record = {i, j/N for i, j in record}
+        </code>
+    </pre>
 </p>
 <p>
 For the uniform benchmark, we would change this last line to:
 </p>
 <p>
-<code>
-    record = {i, 1.0/len(record) for i, j in record}
-</code>
+    <pre>
+        <code>
+            record = {i, 1.0/len(record) for i, j in record}
+        </code>
+    </pre>
 </p>
 This would make all the items have the same probability in our distribution, so that in part two, the items would get distributed evenly in a uniform manner, with no particular items being prioritized/more likely to occur first in the chests.
 
