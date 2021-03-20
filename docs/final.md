@@ -270,6 +270,8 @@ Our "Optimal" placement translated to
 
 By running both benchmarks and solution on these settings, we can ensure that differences that are shown would be in improvements that our algorithm had made.
 
+To evaluate each of the data points, we will be recording four Data points -- the distribution of items, the steps, the number of failures, and the overall "score" heuristic. We will compose a moving average graph to show improvement over time (which will be done with steps, failures and reward scores), a distribution heat graph for the distribution before and after training, and a histogram of reward and step distribution at these time steps. Together, we will analyze these data points to create a Qualitative and Quantitative analysis. Quantitatively, we are looking in the step, reward and failure distribution -- if the moving averages tending towards less steps and failures, and higher reward scores, we have succeeded. If we improve upon these metrics over the benchmark, then we have succeeded in our mission. Qualitatively, we know to look for the distribution of objects -- to find if we are distributing items that occur more often in the closer bins, and are avoiding bins that may cause failure to open. If we may do so, then we have succeeded qualiatitvely as well.
+
 ### Case 1: No Chest Stochasticity
 
 ###### Benchmark (Optimal) results:
@@ -301,7 +303,17 @@ By running both benchmarks and solution on these settings, we can ensure that di
 </table>
 
 ###### RL results:
-<img src="static/graphs/case1/case1.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case1/case1.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case1/moving_failure.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case1/moving_steps.png"/>
+    </div>
+</div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case1/first/heatmap100.png" style="width:100%"/>
@@ -359,7 +371,17 @@ By running both benchmarks and solution on these settings, we can ensure that di
 </table>
 
 #### RL results:
-<img src="static/graphs/case2/case2.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case2/case2.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case2/moving_failure.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case2/moving_steps.png"/>
+    </div>
+</div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case2/first/heatmap100.png" style="width:100%"/>
@@ -414,7 +436,17 @@ By running both benchmarks and solution on these settings, we can ensure that di
 </table>
 
 #### RL results:
-<img src="static/graphs/case3/case3.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case3/case3.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case3/moving_failure.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case3/moving_steps.png"/>
+    </div>
+</div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case3/first/heatmap100.png" style="width:100%"/>
@@ -469,7 +501,17 @@ By running both benchmarks and solution on these settings, we can ensure that di
 </table>
 
 #### RL results:
-<img src="static/graphs/case4/case4.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case4/case4.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case4/moving_failure.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case4/moving_steps.png"/>
+    </div>
+</div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case4/first/heatmap100.png" style="width:100%"/>
@@ -496,7 +538,17 @@ By running both benchmarks and solution on these settings, we can ensure that di
 
 ### Case 5: Random
 #### RL results:
-<img src="static/graphs/case5/case5.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case5/case5.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case5/moving_failure.png"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+      <img src="static/graphs/case5/moving_steps.png"/>
+    </div>
+</div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case5/first/heatmap100.png" style="width:100%"/>
@@ -523,7 +575,7 @@ By running both benchmarks and solution on these settings, we can ensure that di
 
 
 ### Qualitative Analysis
-Overall it was difficult to determine if there was any qualitative effect in terms of a reducction of steps as the step variation between our trained model and 
+Our Qualitative Analysis, as defined above, turns to 
 
 
 ### Quantiative Analysis
