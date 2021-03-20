@@ -251,6 +251,23 @@ In order to evaluate the various cases our agent could encounter we modeled 5 di
 
 To provide a consistent benchmark and interface, we created a constant dataset for the requester, benchmarks and our solutions to be run on, which may be found here at (requester.json)[https://github.com/burwinliu/LibraryOfAlexandria/blob/main/MalmoPlatform/Malmo/samples/Python_examples/library/requester.json]
 
+In more detail, our requesting distribution was roughly as follows:
+"stone": 0.05, "diamond", 0.05, "glass", 0.03, "ladder", 0.07, "brick", 0.53, "dragon_egg", .27
+
+Our "Optimal" placement translated to 
+```
+  Chest 1:  {'brick': [0, 2], 'dragon_egg': [1]}, 
+  Chest 2:  {'dragon_egg': [0], 'ladder': [1], 'stone': [2]},
+  Chest 3:  {'ladder': [0], 'diamond': [1], 'stone': [2]}, 
+  Chest 4:  {'diamond': [0], 'glass': [1, 2]}, 
+  Chest 5:  {'glass': [0]}
+  Chest 6:  {}
+  Chest 7:  {}
+  Chest 8:  {}
+  Chest 9:  {}
+  Chest 10: {}
+```
+
 By running both benchmarks and solution on these settings, we can ensure that differences that are shown would be in improvements that our algorithm had made.
 
 ### Case 1: No Chest Stochasticity
@@ -265,20 +282,20 @@ By running both benchmarks and solution on these settings, we can ensure that di
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1475.17</td>
-    <td>24.83</td>
+    <td>1479.33</td>
+    <td>20.67</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
+    <td>1492</td>
     <td>32</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Min</td>
     <td>1468</td>
-    <td>18</td>
+    <td>8</td>
     <td>0</td>
   </tr>
 </table>
@@ -313,7 +330,7 @@ By running both benchmarks and solution on these settings, we can ensure that di
 
 
 ### Case 2: High chance of failure in chests close to the start position
-Benchmark (Optimal) results:
+#### Benchmark (Optimal) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
@@ -323,13 +340,13 @@ Benchmark (Optimal) results:
   </tr>
   <tr>
     <td>Mean</td>
-    <td>-47.26</td>
-    <td>20.49</td>
-    <td>1.59</td>
+    <td>10.96</td>
+    <td>17.83</td>
+    <td>1.80</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
+    <td>1492</td>
     <td>32</td>
     <td>3</td>
   </tr>
@@ -341,7 +358,7 @@ Benchmark (Optimal) results:
   </tr>
 </table>
 
-RL results:
+#### RL results:
 <img src="static/graphs/case2/case2.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
@@ -368,7 +385,7 @@ RL results:
 </div>
 
 ### Case 3: High Chance of Failure in chests towards the middle
-Benchmark (Optimal) results:
+#### Benchmark (Optimal) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
@@ -378,25 +395,25 @@ Benchmark (Optimal) results:
   </tr>
   <tr>
     <td>Mean</td>
-    <td>902.97</td>
+    <td>918.81</td>
     <td>23.51</td>
-    <td>0.373</td>
+    <td>0.36</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
+    <td>1492</td>
     <td>32</td>
     <td>2</td>
   </tr>
   <tr>
     <td>Min</td>
     <td>-200</td>
-    <td>18</td>
+    <td>8</td>
     <td>0</td>
   </tr>
 </table>
 
-RL results:
+#### RL results:
 <img src="static/graphs/case3/case3.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
@@ -423,7 +440,7 @@ RL results:
 </div>
 
 ### Case 4: High Chance of failure with chests at the end of the chest row
-Benchmark (Optimal) results:
+#### Benchmark (Optimal) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
@@ -433,25 +450,25 @@ Benchmark (Optimal) results:
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1474.70</td>
-    <td>25.296</td>
+    <td>1474.80</td>
+    <td>25.196</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
+    <td>1492</td>
     <td>32</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Min</td>
     <td>1468</td>
-    <td>18</td>
+    <td>8</td>
     <td>0</td>
   </tr>
 </table>
 
-RL results:
+#### RL results:
 <img src="static/graphs/case4/case4.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
@@ -478,7 +495,8 @@ RL results:
 </div>
 
 ### Case 5: Random
-RL results:
+#### RL results:
+<img src="static/graphs/case5/case5.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case5/first/heatmap100.png" style="width:100%"/>

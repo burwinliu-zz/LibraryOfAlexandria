@@ -39,7 +39,7 @@ class BenchMark:
 
         self._inventory = {}
         self._itemPos = {}
-        self._chestContents = []
+        self._chestContents = [{}]
 
         # Idea; pop, add one, then record number of "partial items" added, until any hit the number one. if never
         # happens, or the item runs out, pop next item, and then divide all values by new prob of new item, then
@@ -48,48 +48,58 @@ class BenchMark:
         tempDistribution = sorted([[key, val] for key, val in distribution.items()],
                                   key=lambda x: x[1])
         distCurr = {key: val for key, val in tempDistribution}
-        contents = self.max_items_per_chest
-        pos = -1
+        contents = 0
+        pos = 0
         # This entire unholy piece of code is made to simulate the distribution of items right now, with the
         # method prescribed above.
+        print(distribution)
         while len(tempDistribution) > 0:
             current = tempDistribution.pop()
+            tempDistribution = sorted(tempDistribution, key=lambda x: x[1])
+            print(current, tempDistribution, distCurr)
             # Set the distribution values correctly to their appropriate weights
             for iterate_val in range(len(tempDistribution)):
                 tempDistribution[iterate_val][1] /= current[1]
                 distCurr[tempDistribution[iterate_val][0]] /= current[1]
+            
             while tempRecord[current[0]] > 0:
-                if contents == self.max_items_per_chest:
-                    self._chestContents.append({})
-                    contents = 0
-                    pos += 1
+                
                 if current[0] not in self._chestContents[pos]:
                     self._chestContents[pos][current[0]] = []
                 if current[0] not in self._itemPos:
                     self._itemPos[current[0]] = set()
+
                 self._chestContents[pos][current[0]].append(contents)
                 self._itemPos[current[0]].add(pos)
                 tempRecord[current[0]] -= 1
                 contents += 1
+                if contents == self.max_items_per_chest:
+                    self._chestContents.append({})
+                    contents = 0
+                    pos += 1
 
                 for key in range(len(tempDistribution)):
                     tempDistribution[key][1] += distCurr[tempDistribution[key][0]]
-                    while tempDistribution[key][1] > 0:
-                        if contents == self.max_items_per_chest:
-                            self._chestContents.append({})
-                            contents = 0
-                            pos += 1
+                    while tempDistribution[key][1] > 1:
+                        
                         item = tempDistribution[key][0]
                         tempRecord[item] -= 1
                         tempDistribution[key][1] -= 1
-                        contents += 1
+
                         if item not in self._chestContents[pos]:
                             self._chestContents[pos][item] = []
                         if item not in self._itemPos:
                             self._itemPos[item] = set()
                         self._chestContents[pos][item].append(contents)
+                        contents += 1
+
                         self._itemPos[item].add(pos)
+                        if contents == self.max_items_per_chest:
+                            self._chestContents.append({})
+                            contents = 0
+                            pos += 1
         self.default = copy.deepcopy([self._chestContents, self._itemPos])
+        print(self.default)
 
     def GetMissionXML(self):
         leftX = self.obs_size * 2 + 2
@@ -365,7 +375,7 @@ if __name__ == "__main__":
                     2, pathToReq)
     # Percentage for failure to open in a chest
 
-    # stochasticFailure =  [0] * 10
+    stochasticFailure =  [0] * 10
     # stochasticFailure = [0.7805985575324255, 0, 0.618243240812539, 0,
     #                         0, 0, 0, 0,
     #                         0, 0.30471561338685693]
@@ -374,12 +384,12 @@ if __name__ == "__main__":
     #                        0, 0, 0, 0,
     #                        0, 0.30471561338685693]
     # Best Case scenario
-    stochasticFailure =  [0, 0, 0,
-                           0, 0, 0, 0,
-                           0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+    # stochasticFailure =  [0, 0, 0,
+    #                        0, 0, 0, 0,
+    #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
     length = 0
     record = {}
-    for _ in range(10000):
+    for _ in range(100000):
         # TODO Average all inputs from requester, and distribute to correct chests
         newReq = req.get_request()
         for i, j in newReq.items():

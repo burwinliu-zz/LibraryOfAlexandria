@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
     # Source file
-    toConstruct = "Store\\Store\\case3\\returnsfinalpart.json"
+    toConstruct = "Store\\Store\\logs1\\returnsfinalpart.json"
     # Dest File
     resultPath = "result.png"
 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         for _, j in data.items():
             totalCur += j
             toSave.append(totalCur/(len(toSave) + 1))
-    plt.title('Moving Average')
+    plt.title('Moving Average Random Distribution Run')
     plt.ylabel('Reward')
     plt.xlabel('Step')
     plt.plot(toSave)
