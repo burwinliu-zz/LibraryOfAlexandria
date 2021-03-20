@@ -302,6 +302,34 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
+###### Benchmark (Uniform) results:
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>1474.504</td>
+    <td>25.496</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1482</td>
+    <td>28</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>1472</td>
+    <td>18</td>
+    <td>0</td>
+  </tr>
+</table>
+
 ###### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
@@ -365,6 +393,34 @@ To evaluate each of the data points, we will be recording four Data points -- th
   <tr>
     <td>Min</td>
     <td>-300</td>
+    <td>2</td>
+    <td>0</td>
+  </tr>
+</table>
+
+###### Benchmark (Uniform) results:
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>-131.77</td>
+    <td>19.112</td>
+    <td>1.982</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1482</td>
+    <td>28</td>
+    <td>5</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-500</td>
     <td>2</td>
     <td>0</td>
   </tr>
@@ -435,6 +491,34 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
+###### Benchmark (Uniform) results:
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>863.574</td>
+    <td>22.128</td>
+    <td>0.465</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1482</td>
+    <td>28</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-300</td>
+    <td>16</td>
+    <td>0</td>
+  </tr>
+</table>
+
 #### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
@@ -496,6 +580,34 @@ To evaluate each of the data points, we will be recording four Data points -- th
     <td>Min</td>
     <td>1468</td>
     <td>8</td>
+    <td>0</td>
+  </tr>
+</table>
+
+###### Benchmark (Uniform) results:
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>1476.076</td>
+    <td>23.924</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1482</td>
+    <td>28</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>1472</td>
+    <td>18</td>
     <td>0</td>
   </tr>
 </table>
