@@ -258,6 +258,7 @@ By running both benchmarks and solution on these settings, we can ensure that di
 
 ###### RL results:
 <img src="static/graphs/case1/case1.png"/>
+<img src="static/graphs/case1/first/heatmap100.png"/>
 
 
 
@@ -293,6 +294,8 @@ Benchmark (Optimal) results:
 
 RL results:
 <img src="static/graphs/case2/case2.png"/>
+<img src="static/graphs/case2/first/heatmap100.png"/>
+
 
 ### Case 3: High Chance of Failure in chests towards the middle
 Benchmark (Optimal) results:
@@ -324,7 +327,8 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case4/case4.png"/>
+<img src="static/graphs/case3/case3.png"/>
+<img src="static/graphs/case3/first/heatmap100.png"/>
 
 
 ### Case 4: High Chance of failure with chests at the end of the chest row
@@ -357,12 +361,12 @@ Benchmark (Optimal) results:
 </table>
 
 RL results:
-<img src="static/graphs/case3/case3.png"/>
+<img src="static/graphs/case4/first/heatmap100.png"/>
 
 
 ### Case 5: Random
 RL results:
-<img src="static/graphs/case5/case5.png"/>
+<img src="static/graphs/case5/first/heatmap100.png"/>
 
 
 ### Qualitative Analysis
