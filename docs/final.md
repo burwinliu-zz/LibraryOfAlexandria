@@ -317,7 +317,29 @@ Benchmark (Optimal) results:
 RL results:
 <img src="static/graphs/case2/case2.png"/>
 <img src="static/graphs/case2/first/heatmap100.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/first/heatmap100.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/first/reward_histogram100.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/first/step_histogram100.png" style="width:100%"/> 
+    </div>
+</div>
 
+<div style="display: flex;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/third/heatmap24600.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/third/reward_histogram24600.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case2/third/step_histogram24600.png" style="width:100%"/> 
+    </div>
+</div>
 
 ### Case 3: High Chance of Failure in chests towards the middle
 Benchmark (Optimal) results:
@@ -351,7 +373,29 @@ Benchmark (Optimal) results:
 RL results:
 <img src="static/graphs/case3/case3.png"/>
 <img src="static/graphs/case3/first/heatmap100.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case3/first/heatmap100.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case3/first/reward_histogram100.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case3/first/step_histogram100.png" style="width:100%"/> 
+    </div>
+</div>
 
+<div style="display: flex;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/heatmap43800.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/reward_histogram43800.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case1/third/step_histogram43800.png" style="width:100%"/> 
+    </div>
+</div>
 
 ### Case 4: High Chance of failure with chests at the end of the chest row
 Benchmark (Optimal) results:
@@ -384,11 +428,55 @@ Benchmark (Optimal) results:
 
 RL results:
 <img src="static/graphs/case4/first/heatmap100.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/first/heatmap100.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/first/reward_histogram100.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/first/step_histogram100.png" style="width:100%"/> 
+    </div>
+</div>
 
+<div style="display: flex;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/third/heatmap20000.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/third/reward_histogram20000.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case4/third/step_histogram20000.png" style="width:100%"/> 
+    </div>
+</div>
 
 ### Case 5: Random
 RL results:
-<img src="static/graphs/case5/first/heatmap100.png"/>
+<div style="display: flex;width:100%;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/first/heatmap100.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/first/reward_histogram100.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/first/step_histogram100.png" style="width:100%"/> 
+    </div>
+</div>
+
+<div style="display: flex;">
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/third/heatmap24100.png" style="width:100%"/>
+    </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/third/reward_histogram24100.png" style="width:100%"/> 
+     </div>
+    <div style="flex: 33.33%;padding: 5px;">
+        <img src="static/graphs/case5/third/step_histogram24100.png" style="width:100%"/> 
+    </div>
+</div>
 
 
 ### Qualitative Analysis
