@@ -260,13 +260,13 @@ By running both benchmarks and solution on these settings, we can ensure that di
 <img src="static/graphs/case1/case1.png"/>
 <div style="display: flex;width:100%;">
     <div style="flex: 25%;padding: 5px;">
-        <img src="static/graphs/case1/first/heatmap100.png" style="width:75%"/>
+        <img src="static/graphs/case1/first/heatmap100.png" style="width:100%"/>
     </div>
     <div style="flex: 25%;padding: 5px;">
-        <img src="static/graphs/case1/first/reward_histogram100.png" style="width:75%"/> 
+        <img src="static/graphs/case1/first/reward_histogram100.png" style="width:100%"/> 
      </div>
     <div style="flex: 25%;padding: 5px;">
-        <img src="static/graphs/case1/first/step_histogram100.png" style="width:75%"/> 
+        <img src="static/graphs/case1/first/step_histogram100.png" style="width:100%"/> 
     </div>
 </div>
 
