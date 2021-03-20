@@ -302,6 +302,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
+
 ###### Benchmark (Uniform) results:
 <table style="width:100%">
   <tr>
@@ -398,7 +399,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
-###### Benchmark (Uniform) results:
+
+##### Benchmark (Uniform) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
@@ -491,7 +493,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
-###### Benchmark (Uniform) results:
+
+##### Benchmark (Uniform) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
@@ -584,7 +587,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
 </table>
 
-###### Benchmark (Uniform) results:
+
+##### Benchmark (Uniform) results:
 <table style="width:100%">
   <tr>
     <th>Stat Type</th>
