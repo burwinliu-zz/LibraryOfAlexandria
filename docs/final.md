@@ -213,31 +213,19 @@ Our benchmarks were created with 10000 iteratons to create the distribution, and
 #### Benchmark Uniform
 For the uniform benchmark (file found in [here](https://github.com/burwinliu/LibraryOfAlexandria/blob/main/MalmoPlatform/Malmo/samples/Python_examples/library/BenchmarkUniform.py)), we took a similar approach to the previous "optimal" benchmark, with just a slight change during the distribution of items.
 
-In the "optimal" benchmark, this was how we sampled for the true probability distribution:
+
+For the uniform benchmark, we distribute the items using a uniform strategy, where each item randomly selects a single chest as thus
 <p>
     <pre>
         <code>
-            record = {}
-            for _ in N:
-                item = get_request()
-                record.insert(item, record[item]+1 or 0)
-            record = {i, j/N for i, j in record}
-        </code>
-    </pre>
-</p>
-<p>
-For the uniform benchmark, we would change this last line to:
-</p>
-<p>
-    <pre>
-        <code>
-            record = {i, 1.0/len(record) for i, j in record}
+            for itemIds, numItems in items:             # items is a dict of itemIds: number of items
+              placeItemAtChest(itemId, randomNum(0, 10) # choose a random number in this range and place the item at that location
         </code>
     </pre>
 </p>
 This would make all the items have the same probability in our distribution, so that in part two, the items would get distributed evenly in a uniform manner, with no particular items being prioritized/more likely to occur first in the chests.
 
-We expect this uniform benchmark to yield the worst results, as this benchmark is almost like distributing the items into the chests in a random order. For this benchmark, we also used 10000 iterations to create the distribution, and 1000 iterations over the requests, to keep it constant for a more accurate comparison between the two benchmarks.
+We expect this uniform benchmark to yield the worst results, as this benchmark is almost like distributing the items into the chests in a random order. For this benchmark, we also used 1000 iterations over the requests, to keep it constant for a more accurate comparison between the two benchmarks.
 
  
 ## Evaluation
