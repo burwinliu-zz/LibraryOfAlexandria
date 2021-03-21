@@ -306,20 +306,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1475.856</td>
-    <td>24.144</td>
+    <td>1457.798</td>
+    <td>42.202</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
-    <td>28</td>
+    <td>1472</td>
+    <td>50</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>1472</td>
-    <td>18</td>
+    <td>1450</td>
+    <td>28</td>
     <td>0</td>
   </tr>
 </table>
@@ -434,20 +434,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>-136.64</td>
-    <td>18.6766</td>
-    <td>2.0627</td>
+    <td>366.8988</td>
+    <td>31.653</td>
+    <td>0.7259</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
-    <td>28</td>
-    <td>5</td>
+    <td>1488</td>
+    <td>50</td>
+    <td>2</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>-500</td>
-    <td>2</td>
+    <td>-200</td>
+    <td>10</td>
     <td>0</td>
   </tr>
 </table>
@@ -557,20 +557,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>403.0106</td>
-    <td>21.5996</td>
-    <td>0.9837</td>
+    <td>349.2878</td>
+    <td>38.0162</td>
+    <td>1.0032</td>
   </tr>
   <tr>
     <td>Max</td>
     <td>1482</td>
-    <td>28</td>
-    <td>4</td>
+    <td>46</td>
+    <td>3</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>-400</td>
-    <td>2</td>
+    <td>-300</td>
+    <td>0</td>
     <td>0</td>
   </tr>
 </table>
@@ -679,20 +679,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1475.7734</td>
-    <td>24.2266</td>
-    <td>0</td>
+    <td>1289.0114</td>
+    <td>36.0796</td>
+    <td>0.1175</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1482</td>
-    <td>28</td>
-    <td>0</td>
+    <td>1472</td>
+    <td>50</td>
+    <td>2</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>1472</td>
-    <td>18</td>
+    <td>-200</td>
+    <td>28</td>
     <td>0</td>
   </tr>
 </table>
