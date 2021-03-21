@@ -862,4 +862,17 @@ OVerall, I believe that we have accomplished in creating a solution for the prob
 
 ## References
 
+Malmo Reference
+https://microsoft.github.io/malmo/0.21.0/Schemas/MissionHandlers.html
+
+PPO research
+https://web.stanford.edu/class/archive/cs/cs221/cs221.1192/2018/restricted/posters/cvarano/poster.pdf
+
+https://arxiv.org/pdf/1804.06459.pdf
+
 https://machinelearningmastery.com/why-one-hot-encode-data-in-machine-learning/
+
+
+
+
+
