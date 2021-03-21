@@ -313,8 +313,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1474.504</td>
-    <td>25.496</td>
+    <td>1475.856</td>
+    <td>24.144</td>
     <td>0</td>
   </tr>
   <tr>
@@ -411,9 +411,9 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>-131.77</td>
-    <td>19.112</td>
-    <td>1.982</td>
+    <td>-136.64</td>
+    <td>18.6766</td>
+    <td>2.0627</td>
   </tr>
   <tr>
     <td>Max</td>
@@ -506,20 +506,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>863.574</td>
-    <td>22.128</td>
-    <td>0.465</td>
+    <td>403.0106</td>
+    <td>21.5996</td>
+    <td>0.9837</td>
   </tr>
   <tr>
     <td>Max</td>
     <td>1482</td>
     <td>28</td>
-    <td>3</td>
+    <td>4</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>-300</td>
-    <td>16</td>
+    <td>-400</td>
+    <td>2</td>
     <td>0</td>
   </tr>
 </table>
@@ -601,8 +601,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1476.076</td>
-    <td>23.924</td>
+    <td>1475.7734</td>
+    <td>24.2266</td>
     <td>0</td>
   </tr>
   <tr>
