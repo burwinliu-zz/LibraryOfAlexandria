@@ -302,20 +302,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1464.604</td>
-    <td>35.396</td>
+    <td>1457.798</td>
+    <td>42.202</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1480</td>
+    <td>1472</td>
     <td>50</td>
     <td>0</td>
   </tr>
   <tr>
     <td>Min</td>
     <td>1450</td>
-    <td>20</td>
+    <td>28</td>
     <td>0</td>
   </tr>
 </table>
