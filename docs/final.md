@@ -267,6 +267,7 @@ Our "Optimal" placement translated to
   Chest 9:  {}
   Chest 10: {}
 ```
+Our data was averaged over 10,000 samples for the Optimal placement, and the distribution derrived from 100000 samples, so as to approach the true distribution.
 
 By running both benchmarks and solution on these settings, we can ensure that differences that are shown would be in improvements that our algorithm had made.
 
@@ -477,8 +478,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>918.81</td>
-    <td>23.51</td>
+    <td>914.09</td>
+    <td>18.374</td>
     <td>0.36</td>
   </tr>
   <tr>
@@ -572,8 +573,8 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1474.80</td>
-    <td>25.196</td>
+    <td>1479.27</td>
+    <td>20.7256</td>
     <td>0</td>
   </tr>
   <tr>

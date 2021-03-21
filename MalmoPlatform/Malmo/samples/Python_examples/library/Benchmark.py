@@ -375,7 +375,7 @@ if __name__ == "__main__":
                     2, pathToReq)
     # Percentage for failure to open in a chest
 
-    stochasticFailure =  [0] * 10
+    # stochasticFailure =  [0] * 10
     # stochasticFailure = [0.7805985575324255, 0, 0.618243240812539, 0,
     #                         0, 0, 0, 0,
     #                         0, 0.30471561338685693]
@@ -384,9 +384,9 @@ if __name__ == "__main__":
     #                        0, 0, 0, 0,
     #                        0, 0.30471561338685693]
     # Best Case scenario
-    # stochasticFailure =  [0, 0, 0,
-    #                        0, 0, 0, 0,
-    #                        0.618243240812539, 0.7805985575324255, 0.30471561338685693]
+    stochasticFailure =  [0, 0, 0,
+                           0, 0, 0, 0,
+                           0.618243240812539, 0.7805985575324255, 0.30471561338685693]
     length = 0
     record = {}
     for _ in range(100000):
@@ -406,7 +406,7 @@ if __name__ == "__main__":
     rewards = []
     steps = []
     failedData = []
-    for _ in range(1000):
+    for _ in range(10000):
         mark.reset()
         mark.init_malmo()
         newReq = req.get_request()
