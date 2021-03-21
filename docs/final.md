@@ -296,7 +296,7 @@ Second, take into consideration the average score in [case 2](#case2-table) and 
 
 Finally, our algorithm improved the rewards and distribution from the initial distribution at higher ranks, placing items that led to results of consistently less steps taken to complete retreieval and consistently higher composite rewards as a result, as shown in [case 5](#case5).
 
-OVerall, I believe that we have accomplished in creating a solution for the problem that we set out to do, and have created a working method that may suffice to sort items in a manner that may retrieve in less steps, while avoiding any pitfalls along the way. With more tuning of parameters, such as the rewards parameters, I believe that we may optimize our approach to create a solution that would optimally find the proper distribution of items consistently.
+Overall, I believe that we have accomplished in creating a solution for the problem that we set out to do, and have created a working method that may suffice to sort items in a manner that may retrieve in less steps, while avoiding any pitfalls along the way. With more tuning of parameters, such as the rewards parameters, I believe that we may optimize our approach to create a solution that would optimally find the proper distribution of items consistently.
 
 ### Data
 #### Case 1: No Chest Stochasticity
