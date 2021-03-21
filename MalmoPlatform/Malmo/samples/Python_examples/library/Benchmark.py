@@ -260,6 +260,7 @@ class BenchMark:
             for i in range(self._nextOpen):
                 self.invAction("swap", i, i)
             score += self.closeChest()
+        self.moveToChest(-1)
         return result, score
 
     def _updateObs(self):
@@ -363,8 +364,25 @@ class BenchMark:
     def reset(self):
         # Todo, according to self.distribution, distribute items in self._itemPos and self._chestContents
         self._chestContents, self._itemPos = copy.deepcopy(self.default)
-        self.moveToChest(-1)
-        pass
+        if self._display:
+            invContents = {}
+            self._updateObs()
+            for x in self.world_obs:
+                if "Inventory" in x and "item" in x:
+                    if self.world_obs[x] != 'air':
+                        inv_number = int(x.split("_")[1])
+                        item = self.map[self.world_obs[x]]
+                        if item not in invContents:
+                            invContents[item] = []
+                        invContents[item].append(inv_number)
+                        break
+            for pos, contents in enumerate(self._chestContents):
+                self.moveToChest(pos+1)
+                for i, j in contents.items():
+                    if len(invContents[i]) != 0
+                        self.invAction("swap", invContents[i].pop(), j)
+
+        self.moveToChest(0)
 
 
 if __name__ == "__main__":
@@ -407,8 +425,8 @@ if __name__ == "__main__":
     steps = []
     failedData = []
     for _ in range(10000):
-        mark.reset()
         mark.init_malmo()
+        mark.reset()
         newReq = req.get_request()
         result, score = mark.optimal_retrieve(newReq)
         steps.append(score)

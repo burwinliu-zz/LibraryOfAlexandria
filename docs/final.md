@@ -369,6 +369,34 @@ To evaluate each of the data points, we will be recording four Data points -- th
     </div>
 </div>
 
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>914.09</td>
+    <td>18.374</td>
+    <td>0.36</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1492</td>
+    <td>32</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-200</td>
+    <td>8</td>
+    <td>0</td>
+  </tr>
+</table>
+<p></p>
+
 
 
 
