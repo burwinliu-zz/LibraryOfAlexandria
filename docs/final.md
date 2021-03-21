@@ -231,6 +231,8 @@ We expect this uniform benchmark to yield the worst results, as this benchmark i
 ## Evaluation
 In order to evaluate the various cases our agent could encounter we modeled 5 different sets of probabilites to determine if the stocasticity of the chests effected both the triviality of the problem and at what parameters (if any) the RL agent provided better results than the benchmarking distributions. Each of these situations were created to represent some subset of the overall cases possible, and to demonstrate the efficacy of our approach, and the response to such cases. Our cases are as thus: 4 defined cases, and 1 where it is randomly generated. The probability to fail are as follows:
 
+<div id="stochasticity"></div>
+
 1. (No Chest Stochasticity)                                         [0, 0, 0, 0, 0, 0, 0, 0, 0]
 2. (High chance of failure in chests close to the start position)   [0.7805985575324255, 0, 0.618243240812539, 0, 0, 0, 0, 0, 0, 0.30471561338685693]
 3. (High Chance of Failure in chests towards the middle)            [0, 0.7805985575324255, 0, 0.618243240812539, 0, 0, 0, 0, 0, 0.30471561338685693]
@@ -240,7 +242,7 @@ In order to evaluate the various cases our agent could encounter we modeled 5 di
 To provide a consistent benchmark and interface, we created a constant dataset for the requester, benchmarks and our solutions to be run on, which may be found here at (requester.json)[https://github.com/burwinliu/LibraryOfAlexandria/blob/main/MalmoPlatform/Malmo/samples/Python_examples/library/requester.json]
 
 In more detail, our requesting distribution was roughly as follows:
-"stone": 0.05, "diamond", 0.05, "glass", 0.03, "ladder", 0.07, "brick", 0.53, "dragon_egg", .27
+<p id="distribution"> "stone": 0.05, "diamond", 0.05, "glass", 0.03, "ladder", 0.07, "brick", 0.53, "dragon_egg", .27 </p>
 
 Our "Optimal" placement translated to 
 ```
@@ -258,6 +260,8 @@ Our "Optimal" placement translated to
 Our data was averaged over 10,000 samples for the Optimal placement, and the distribution derrived from 100000 samples, so as to approach the true distribution.
 
 By running both benchmarks and solution on these settings, we can ensure that differences that are shown would be in improvements that our algorithm had made.
+
+<div id="eval-guideline"></div>
 
 To evaluate each of the data points, we will be recording four Data points -- the distribution of items, the steps, the number of failures, and the overall "score" heuristic. We will compose a moving average graph to show improvement over time (which will be done with steps, failures and reward scores), a distribution heat graph for the distribution before and after training, and a histogram of reward and step distribution at these time steps. Together, we will analyze these data points to create a Qualitative and Quantitative analysis. Quantitatively, we are looking in the step, reward and failure distribution -- if the moving averages tending towards less steps and failures, and higher reward scores, we have succeeded. If we improve upon these metrics over the benchmark, then we have succeeded in our mission. Qualitatively, we know to look for the distribution of objects -- to find if we are distributing items that occur more often in the closer bins, and are avoiding bins that may cause failure to open. If we may do so, then we have succeeded qualiatitvely as well.
 
@@ -337,7 +341,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
 
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case1/first/heatmap100.png" style="width:100%"/>
+        <img id="case1-heat-100" src="static/graphs/case1/first/heatmap100.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case1/first/reward_histogram100.png" style="width:100%"/> 
@@ -463,7 +467,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
 </div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case2/first/heatmap100.png" style="width:100%"/>
+        <img id="case2-heat-100" src="static/graphs/case2/first/heatmap100.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case2/first/reward_histogram100.png" style="width:100%"/> 
@@ -773,7 +777,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
 </div>
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-        <img src="static/graphs/case5/first/heatmap100.png" style="width:100%"/>
+        <img id="case5-heat-100" src="static/graphs/case5/first/heatmap100.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case5/first/reward_histogram100.png" style="width:100%"/> 
@@ -824,8 +828,15 @@ To evaluate each of the data points, we will be recording four Data points -- th
 
 
 ### Qualitative Analysis
-Our Qualitative Analysis, as defined above 
+Our Qualitative Analysis, as defined above is based on the assessment of how well each run adapts to the inputs provided. For our runs, in all cases, whether it be in case 1 or case 5, you can see there are three distinct tendencies for our agent -- the first, is to try and pack in as many items close to the "front" and second is to avoid placing items in as many "possible failure" points as possible, a dramatic improvement from the initial placement of items, and the third is to pack "significant" items towards the front of the run.
 
+The first tendency in the figures from [case 1](#case1-heat-100)), initially, as seen in the figure on the left, the items are placed in a random manner -- however, as you see on the right, items are placed as far right as possible by the time the run ended. 
+
+The second tendency is demonstrated in the figures from run [case 2](#case2-heat-100). The rate of failure of each chest for case 2, as disclosed [above](#stochasticity) highest at 1, 3 and 10. Therefore, we can see in the tendnecy of the heatmap from the trained actor, that the agent distributed items not within those positions of Chests 1, 3 or 10, which is tendency reflected in the heatmap below.
+
+Finally, the third tendnecy is demonstrated from run [case 5](#case5-heat-100), where items that are requested from the most in the [distribution](#distribution) were brick, then dragons egg, then ladder, then diamond/stone then glass. As you can see in the heatgraph, while not perfect, brick was placed closest to the front, then dragons egg, then stone, then ladders, then diamonds, then glass (first occurances/majority). 
+
+Therefore, it is with confidence that this solution solves the problem qualitatively -- defined [above](#eval-guideline) to be the placement of objects in a manner in which would improve retrieval time, and avoid failure, by placing items as close as possible to the start, with items requested more often closer, and avoid placing items in all chests that may cause failure.
 
 ### Quantiative Analysis
 
