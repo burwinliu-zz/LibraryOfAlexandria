@@ -6,9 +6,9 @@ if __name__ == "__main__":
     # Create moving average graphs  
     script_dir = os.path.dirname(__file__)
     # Source file
-    # toConstruct = "Store\\Store\\case2\\stepData.json"
-    # toConstruct = "Store\\Store\\case2\\returnsfinalpart.json"
-    toConstruct = "Store\\Store\\case2\\failureData.json"
+    # toConstruct = "Store\\Store\\logs1\\stepData.json"
+    # toConstruct = "Store\\Store\\logs1\\returnsfinalpart.json"
+    toConstruct = "Store\\Store\\logs1\\failureData.json"
     # Dest File
     resultPath = "moving_steps.png"
 

@@ -260,7 +260,7 @@ Our "Optimal" placement translated to
   Chest 2:  {'dragon_egg': [0], 'ladder': [1], 'stone': [2]},
   Chest 3:  {'ladder': [0], 'diamond': [1], 'stone': [2]}, 
   Chest 4:  {'diamond': [0], 'glass': [1, 2]}, 
-  Chest 5:  {'glass': [0]}
+  Chest 5:  {}
   Chest 6:  {}
   Chest 7:  {}
   Chest 8:  {}
@@ -336,15 +336,17 @@ To evaluate each of the data points, we will be recording four Data points -- th
 ###### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case1/case1.png"/>
+      <img src="static/graphs/case1/case1.png"  style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case1/moving_failure.png"/>
+      <img src="static/graphs/case1/moving_failure.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case1/moving_steps.png"/>
+      <img src="static/graphs/case1/moving_steps.png" style="width:100%"/>
     </div>
 </div>
+
+
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
         <img src="static/graphs/case1/first/heatmap100.png" style="width:100%"/>
@@ -379,14 +381,14 @@ To evaluate each of the data points, we will be recording four Data points -- th
   <tr>
     <td>Mean</td>
     <td>1202.96</td>
-    <td>29.664</td>
-    <td>0.36</td>
+    <td>29.66</td>
+    <td>0</td>
   </tr>
   <tr>
     <td>Max</td>
     <td>1440</td>
     <td>50</td>
-    <td>2</td>
+    <td>0</td>
   </tr>
   <tr>
     <td>Min</td>
@@ -462,13 +464,13 @@ To evaluate each of the data points, we will be recording four Data points -- th
 #### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case2/case2.png"/>
+      <img src="static/graphs/case2/case2.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case2/moving_failure.png"/>
+      <img src="static/graphs/case2/moving_failure.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case2/moving_steps.png"/>
+      <img src="static/graphs/case2/moving_steps.png" style="width:100%"/>
     </div>
 </div>
 <div style="display: flex;width:100%;">
@@ -504,20 +506,20 @@ To evaluate each of the data points, we will be recording four Data points -- th
   </tr>
   <tr>
     <td>Mean</td>
-    <td>1202.96</td>
-    <td>29.664</td>
-    <td>0.36</td>
+    <td>1094.4</td>
+    <td>36.84</td>
+    <td>0.04</td>
   </tr>
   <tr>
     <td>Max</td>
-    <td>1440</td>
-    <td>50</td>
+    <td>1400</td>
+    <td>46</td>
     <td>2</td>
   </tr>
   <tr>
     <td>Min</td>
-    <td>1000</td>
-    <td>6</td>
+    <td>-20</td>
+    <td>10</td>
     <td>0</td>
   </tr>
 </table>
@@ -585,13 +587,13 @@ To evaluate each of the data points, we will be recording four Data points -- th
 #### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case3/case3.png"/>
+      <img src="static/graphs/case3/case3.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case3/moving_failure.png"/>
+      <img src="static/graphs/case3/moving_failure.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case3/moving_steps.png"/>
+      <img src="static/graphs/case3/moving_steps.png" style="width:100%"/>
     </div>
 </div>
 <div style="display: flex;width:100%;">
@@ -617,6 +619,33 @@ To evaluate each of the data points, we will be recording four Data points -- th
         <img src="static/graphs/case3/third/step_histogram43800.png" style="width:100%"/> 
     </div>
 </div>
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>1080.04</td>
+    <td>37.34</td>
+    <td>0.04</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1320</td>
+    <td>50</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-200</td>
+    <td>10</td>
+    <td>0</td>
+  </tr>
+</table>
+<p></p>
 
 ### Case 4: High Chance of failure with chests at the end of the chest row
 #### Benchmark (Optimal) results:
@@ -680,13 +709,13 @@ To evaluate each of the data points, we will be recording four Data points -- th
 #### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case4/case4.png"/>
+      <img src="static/graphs/case4/case4.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case4/moving_failure.png"/>
+      <img src="static/graphs/case4/moving_failure.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case4/moving_steps.png"/>
+      <img src="static/graphs/case4/moving_steps.png" style="width:100%"/>
     </div>
 </div>
 <div style="display: flex;width:100%;">
@@ -712,18 +741,46 @@ To evaluate each of the data points, we will be recording four Data points -- th
         <img src="static/graphs/case4/third/step_histogram20000.png" style="width:100%"/> 
     </div>
 </div>
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>1130.44</td>
+    <td>34.46</td>
+    <td>0.01</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1440</td>
+    <td>50</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-200</td>
+    <td>14</td>
+    <td>0</td>
+  </tr>
+</table>
+<p></p>
+
 
 ### Case 5: Random
 #### RL results:
 <div style="display: flex;width:100%;">
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case5/case5.png"/>
+      <img src="static/graphs/case5/case5.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case5/moving_failure.png"/>
+      <img src="static/graphs/case5/moving_failure.png" style="width:100%"/>
     </div>
     <div style="flex: 33.33%;padding: 5px;">
-      <img src="static/graphs/case5/moving_steps.png"/>
+      <img src="static/graphs/case5/moving_steps.png" style="width:100%"/>
     </div>
 </div>
 <div style="display: flex;width:100%;">
@@ -749,6 +806,33 @@ To evaluate each of the data points, we will be recording four Data points -- th
         <img src="static/graphs/case5/third/step_histogram24100.png" style="width:100%"/> 
     </div>
 </div>
+<table style="width:100%">
+  <tr>
+    <th>Stat Type</th>
+    <th>Score</th>
+    <th>Step</th>
+    <th>Fails</th>
+  </tr>
+  <tr>
+    <td>Mean</td>
+    <td>1160.2</td>
+    <td>30.1</td>
+    <td>0.03</td>
+  </tr>
+  <tr>
+    <td>Max</td>
+    <td>1440</td>
+    <td>50</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>Min</td>
+    <td>-100</td>
+    <td>6</td>
+    <td>0</td>
+  </tr>
+</table>
+<p></p>
 
 
 ### Qualitative Analysis
