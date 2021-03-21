@@ -836,7 +836,7 @@ To evaluate each of the data points, we will be recording four Data points -- th
 
 
 ### Qualitative Analysis
-Our Qualitative Analysis, as defined above, turns to 
+Our Qualitative Analysis, as defined above 
 
 
 ### Quantiative Analysis
