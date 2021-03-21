@@ -52,18 +52,15 @@ class BenchMark:
         pos = 0
         # This entire unholy piece of code is made to simulate the distribution of items right now, with the
         # method prescribed above.
-        print(distribution)
         while len(tempDistribution) > 0:
             current = tempDistribution.pop()
             tempDistribution = sorted(tempDistribution, key=lambda x: x[1])
-            print(current, tempDistribution, distCurr)
             # Set the distribution values correctly to their appropriate weights
             for iterate_val in range(len(tempDistribution)):
                 tempDistribution[iterate_val][1] /= current[1]
                 distCurr[tempDistribution[iterate_val][0]] /= current[1]
             
             while tempRecord[current[0]] > 0:
-                
                 if current[0] not in self._chestContents[pos]:
                     self._chestContents[pos][current[0]] = []
                 if current[0] not in self._itemPos:
@@ -80,7 +77,7 @@ class BenchMark:
 
                 for key in range(len(tempDistribution)):
                     tempDistribution[key][1] += distCurr[tempDistribution[key][0]]
-                    while tempDistribution[key][1] > 1:
+                    while tempDistribution[key][1] > 1 and tempRecord[tempDistribution[key][0]] > 0:
                         
                         item = tempDistribution[key][0]
                         tempRecord[item] -= 1
@@ -379,7 +376,7 @@ class BenchMark:
             for pos, contents in enumerate(self._chestContents):
                 self.moveToChest(pos+1)
                 for i, j in contents.items():
-                    if len(invContents[i]) != 0
+                    if len(invContents[i]) != 0:
                         self.invAction("swap", invContents[i].pop(), j)
 
         self.moveToChest(0)
